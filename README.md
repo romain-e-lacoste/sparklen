@@ -8,8 +8,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/sparklen.svg)](https://badge.fury.io/py/sparklen)
 [![PyPI](https://img.shields.io/pypi/v/sparklen)](https://pypi.org/project/sparklen)
 [![arXiv](https://img.shields.io/badge/arXiv-2502.18979-b31b1b?logo=arXiv)](https://arxiv.org/abs/2502.18979)
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/sparklen?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/sparklen)
-
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/sparklen?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/sparklen)
 
 ## Overview 
 
