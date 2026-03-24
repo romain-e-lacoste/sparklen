@@ -2,13 +2,14 @@
 requires = [
   "setuptools",
   "numpy",
-  "wheel"
+  "wheel",
+  "swig",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sparklen"
-version = "1.1.0"
+version = "1.1.dev0"
 requires-python = ">=3.8"
 dependencies = [
   "matplotlib",
