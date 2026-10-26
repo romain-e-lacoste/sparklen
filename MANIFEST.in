@@ -1,2 +1,3 @@
-global-include *.h
-global-include *.i
+prune doc
+prune .github
+global-exclude *_wrap.cxx *.so *.pyd *.py[cod]
