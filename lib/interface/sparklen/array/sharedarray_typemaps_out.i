@@ -43,7 +43,7 @@
 
     // Set the result to the NumPy array
     $result = npArray;
-} 
+}
 
 
 /////////////////////////////////////////////////////
@@ -99,7 +99,7 @@
         SWIG_exception_fail(SWIG_MemoryError, "Unable to allocate memory for output list");
     }
     for (size_t i = 0; i < $1.size(); ++i) {
-        SharedArrayDouble1D arr = $1[i];    
+        SharedArrayDouble1D arr = $1[i];
 
         npy_intp dims[1] = { static_cast<npy_intp>(arr.size()) };
         PyObject *npArray = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, arr.data());
@@ -111,13 +111,13 @@
         if (arr.isPythonOwner()) {
             if (arr.own()) {
                 PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(npArray), NPY_ARRAY_OWNDATA);
-                arr.clear(); 
+                arr.clear();
             } else {
                 PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(npArray), NPY_ARRAY_OWNDATA);
             }
         } else {
             PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(npArray), NPY_ARRAY_OWNDATA);
-            arr.clear(); 
+            arr.clear();
         }
         PyList_SET_ITEM(list, i, npArray);
     }
@@ -143,7 +143,7 @@
             SWIG_exception_fail(SWIG_MemoryError, "Unable to allocate memory for output inner list");
         }
         for (size_t j = 0; j < $1[i].size(); ++j) {
-            SharedArrayDouble1D arr = $1[i][j];    
+            SharedArrayDouble1D arr = $1[i][j];
 
             npy_intp dims[1] = { static_cast<npy_intp>(arr.size()) };
             PyObject *npArray = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, arr.data());
@@ -156,13 +156,13 @@
             if (arr.isPythonOwner()) {
                 if (arr.own()) {
                     PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(npArray), NPY_ARRAY_OWNDATA);
-                    arr.clear(); 
+                    arr.clear();
                 } else {
                     PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(npArray), NPY_ARRAY_OWNDATA);
                 }
             } else {
                 PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(npArray), NPY_ARRAY_OWNDATA);
-                arr.clear(); 
+                arr.clear();
             }
             PyList_SET_ITEM(inner_list, j, npArray);
         }

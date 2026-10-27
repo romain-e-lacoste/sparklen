@@ -3,10 +3,10 @@
 Classification of a bold_multivariate Hawkes Process (MHP)
 ===============================================================================
 
-The following provides a comprehensive guide to using 
+The following provides a comprehensive guide to using
 :class:`~sparklen.hawkes.classification.ERMCLassifier` and
-:class:`~sparklen.hawkes.classification.ERMLRCLassifier` for performing 
-classification of a MHP. 
+:class:`~sparklen.hawkes.classification.ERMLRCLassifier` for performing
+classification of a MHP.
 """
 
 # Author: Romain E. Lacoste
@@ -65,13 +65,13 @@ bold_alpha[2][7:9, 7:9] += 0.2
 bold_alpha[2][9:11, 9:11] += 0.2
 bold_alpha[2][11:13, 11:13] += 0.2
 bold_alpha[2][12:15, 12:15] += 0.2
-    
+
 bold_theta_star = np.empty((K, d, d + 1))
 for k in range(K):
     bold_theta_star[k] = np.hstack([np.reshape(
-        bold_mu[k], (d, -1)), 
+        bold_mu[k], (d, -1)),
         bold_alpha[k]])
-    
+
 # Plot the true coefficients --------------------------------------------------
 
 plot_values(bold_theta_star[1])
@@ -82,9 +82,9 @@ T = 5.0
 n = 600
 
 X, y = make_classification(
-    bold_mu=bold_mu, bold_alpha=bold_alpha, 
-    beta=beta, end_time=T, 
-    n_samples=n, n_classes=K, 
+    bold_mu=bold_mu, bold_alpha=bold_alpha,
+    beta=beta, end_time=T,
+    n_samples=n, n_classes=K,
     random_state=4)
 
 # Split the sample into training and test samples.
@@ -94,17 +94,17 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Perform classification ------------------------------------------------------
 
 clf_erm = ERMCLassifier(
-    decay=beta, gamma0=0.1, 
-    max_iter=500, tol=1e-6, 
-    verbose_bar=True, verbose=True, 
+    decay=beta, gamma0=0.1,
+    max_iter=500, tol=1e-6,
+    verbose_bar=True, verbose=True,
     print_every=10)
 
 clf_erm.fit(X=X_train, y=y_train, end_time=T)
 
 clf_ermlr = ERMLRCLassifier(
-    decay=beta, gamma0=0.1, 
-    max_iter=500, tol=1e-6, 
-    verbose_bar=True, verbose=True, 
+    decay=beta, gamma0=0.1,
+    max_iter=500, tol=1e-6,
+    verbose_bar=True, verbose=True,
     print_every=10)
 
 clf_ermlr.fit(X=X_train, y=y_train, end_time=T)

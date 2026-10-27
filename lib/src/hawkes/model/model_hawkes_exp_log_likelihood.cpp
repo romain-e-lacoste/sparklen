@@ -47,7 +47,3 @@ SharedArrayDouble2D ModelHawkesExpLogLikelihood::compute_averaged_grad(const Lis
 
 	return averaged_grad;
 }
-
-
-
-

@@ -1,7 +1,7 @@
 # init file for package
 
-from .gd import GD
 from .agd import AGD
+from .gd import GD
 
 __all__ = [
     'GD',

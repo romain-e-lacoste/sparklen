@@ -3,8 +3,10 @@
 
 import os
 import subprocess
+
 import numpy
-from setuptools import Extension, setup, find_packages
+from setuptools import Extension, find_packages, setup
+
 
 def ensure_init_files(root_dir):
     for dirpath, dirnames, filenames in os.walk(root_dir):
@@ -22,7 +24,7 @@ def run_swig(interface_file, output_file, include_dirs):
         '-o', output_file,  # Output file for SWIG-generated C++ wrapper code
         interface_file  # Input SWIG interface file
     ]
-    
+
     try:
         subprocess.check_call(swig_cmd)
     except subprocess.CalledProcessError as e:
@@ -34,15 +36,15 @@ def create_extension(module_name, module_dir, source_files):
     interface_dir = os.path.normpath(os.path.join('lib', 'interface', 'sparklen', module_dir))
     src_dir = os.path.normpath(os.path.join('lib', 'src', module_dir))
     build_dir = os.path.normpath(os.path.join('sparklen', module_dir, 'build'))
-    
+
     # Define file paths
     interface_file = os.path.normpath(os.path.join(interface_dir, f'{module_name}_module.i'))
     wrapper_file = os.path.normpath(os.path.join(build_dir, f'{module_name}_wrap.cxx'))
-    
+
     # Ensure build directory exists
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
-    
+
     # Define include directories
     include_dirs = [
         os.path.normpath(os.path.join('lib', 'include')),
@@ -50,16 +52,16 @@ def create_extension(module_name, module_dir, source_files):
         os.path.normpath(os.path.join('lib', 'interface', 'sparklen')),
         os.path.normpath(os.path.join('lib', 'interface'))
     ]
-    
+
     # Run SWIG to generate wrapper code
     run_swig(interface_file, wrapper_file, include_dirs)
-    
+
     # Determine compile arguments based on platform
     extra_compile_args = ['-std=c++11'] if os.name != 'nt' else ['/std:c++11']
-    
+
     # Define source files for the extension
     sources = [wrapper_file] + [os.path.normpath(os.path.join(src_dir, src)) for src in source_files]
-    
+
     # Return the Extension object
     return Extension(
         name=f"sparklen.{module_dir.replace('/', '.')}.build._{module_name}",
@@ -68,7 +70,7 @@ def create_extension(module_name, module_dir, source_files):
         extra_compile_args=extra_compile_args,
         language='c++'
     )
-    
+
 # Create extensions for module1 and module2 with multiple source files
 array_extension = create_extension(
     module_name='array',
@@ -110,5 +112,5 @@ setup(
     packages=find_packages(),
     include_package_data=True,
   )
-  
-ensure_init_files('sparklen')   
+
+ensure_init_files('sparklen')

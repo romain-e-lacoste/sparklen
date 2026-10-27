@@ -157,4 +157,3 @@ SharedArrayDouble2D ModelHawkesExpLeastSquaresSingle::compute_hessian(const List
 
 	return hessian;
 }
-

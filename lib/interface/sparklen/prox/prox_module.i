@@ -13,7 +13,7 @@
 
 %include sparklen/array/array_module.i
 
-%include "sparklen/prox/prox_zero.h"   
-%include "sparklen/prox/prox_l1.h"      
-%include "sparklen/prox/prox_l2.h" 
-%include "sparklen/prox/prox_elastic_net.h" 
+%include "sparklen/prox/prox_zero.h"
+%include "sparklen/prox/prox_l1.h"
+%include "sparklen/prox/prox_l2.h"
+%include "sparklen/prox/prox_elastic_net.h"
