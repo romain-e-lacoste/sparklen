@@ -45,7 +45,8 @@ jobs:
 
   sdist:
     needs: check
-    if: ${{ !failure() && !cancelled() }}   # check passed, or skipped in a dry run
+    # Runs when check passed, or was skipped in a dry run.
+    if: ${{ !cancelled() && (needs.check.result == 'success' || needs.check.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -71,6 +72,9 @@ jobs:
 
   wheels:
     needs: sdist
+    # Runs when sdist succeeded. The explicit condition is needed because a skipped
+    # job (check, in a dry run) otherwise skips every job after it in the chain.
+    if: ${{ !cancelled() && needs.sdist.result == 'success' }}
     name: wheels (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
