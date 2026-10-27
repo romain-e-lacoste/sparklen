@@ -1,13 +1,21 @@
 cff-version: 1.2.0
 message: "If you found this package useful, please consider citing it in your work:"
+type: software
+title: "Sparklen"
+abstract: "A statistical learning toolkit for high-dimensional Hawkes processes in Python."
 authors:
 - family-names: "Lacoste"
   given-names: "Romain Edmond"
   orcid: "https://orcid.org/0009-0006-7029-8000"
-title: "Sparklen"
-version: 1.1.0
-date-released: 2025-02-25
-url: "https://github.com/romain-e-lacoste/sparkle"
+license: BSD-3-Clause
+repository-code: "https://github.com/romain-e-lacoste/sparklen"
+url: "https://github.com/romain-e-lacoste/sparklen"
+keywords:
+- hawkes-process
+- high-dimension
+- classification
+- optimization
+- regularization
 preferred-citation:
   type: article
   authors:
@@ -16,7 +24,5 @@ preferred-citation:
     orcid: "https://orcid.org/0009-0006-7029-8000"
   title: "Sparklen: A Statistical Learning Toolkit for High-Dimensional Hawkes Processes in Python"
   year: 2025
-  eprint: "2502.18979"
-  archivePrefix: "arXiv"
-  primaryClass: "stat.ME"
+  doi: "10.48550/arXiv.2502.18979"
   url: "https://arxiv.org/abs/2502.18979"

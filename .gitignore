@@ -60,3 +60,9 @@ ENV/
 # Eclipse IDE files
 .project
 .cproject
+
+# Tests, coverage and wheel builds
+.pytest_cache/
+.coverage
+htmlcov/
+wheelhouse/
