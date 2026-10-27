@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  push:
+    tags: ["[0-9]+.[0-9]+.[0-9]+*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: github.event_name == 'push'      # skipped in a dry run
+    runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      notes: ${{ steps.version.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the tag and CHANGELOG.md
+        id: version
+        run: |
+          python - <<'PY'
+          import os, pathlib, re, secrets, sys
+          tag = os.environ["GITHUB_REF_NAME"]
+          m = re.fullmatch(r"(\d+\.\d+\.\d+)((a|b|rc)\d+)?", tag)
+          if not m:
+              sys.exit(f"Tag {tag!r} is not a release version such as 1.2.0 or 1.2.0rc1")
+          base, pre = m.group(1), m.group(2) is not None
+          # The section runs from its "## [X.Y.Z] - date" heading to the next
+          # "## [" heading or the link references at the bottom of the file.
+          changelog = pathlib.Path("CHANGELOG.md").read_text()
+          section = re.search(
+              rf"^## \[{re.escape(base)}\][^\n]*\n(.*?)(?=^## \[|^\[[^\]]+\]: |\Z)",
+              changelog, re.M | re.S)
+          if not section or not section.group(1).strip():
+              sys.exit(f"CHANGELOG.md has no '## [{base}]' section, or it is empty")
+          notes = section.group(1).strip()
+          delimiter = f"EOF_{secrets.token_hex(16)}"   # cannot occur in the notes
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"prerelease={'true' if pre else 'false'}\n")
+              out.write(f"notes<<{delimiter}\n{notes}\n{delimiter}\n")
+          print(f"OK: {tag} (pre-release: {pre})\n\n{notes}")
+          PY
+
+  sdist:
+    needs: check
+    if: ${{ !failure() && !cancelled() }}   # check passed, or skipped in a dry run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0           # setuptools-scm reads the version from the tag
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: pipx run build --sdist
+      # The version comes from git (setuptools-scm); make sure it is exactly the tag.
+      - name: Check the sdist version equals the tag
+        if: github.event_name == 'push'
+        run: |
+          ls dist
+          if [ ! -f "dist/sparklen-${GITHUB_REF_NAME}.tar.gz" ]; then
+            echo "::error::Expected dist/sparklen-${GITHUB_REF_NAME}.tar.gz: the built version differs from the tag"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  wheels:
+    needs: sdist
+    name: wheels (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Native runners only: Linux x86_64 and arm64, macOS Intel and Apple silicon, Windows x86_64.
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-15-intel, macos-latest, windows-latest]
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: sdist
+          path: dist
+      # Building from the sdist (not the git checkout) proves the sdist is complete.
+      - name: Build and test wheels
+        shell: bash
+        run: pipx run cibuildwheel==4.2.1 dist/*.tar.gz --output-dir wheelhouse
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  publish-testpypi:
+    needs: [check, sdist, wheels]
+    if: github.event_name == 'push' && needs.check.outputs.prerelease == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/sparklen/
+    permissions:
+      id-token: write              # required by Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    needs: [check, sdist, wheels]
+    if: github.event_name == 'push' && needs.check.outputs.prerelease == 'false'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/sparklen/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: [check, publish-testpypi, publish-pypi]
+    # Exactly one publish job runs and the other is skipped, so the condition names
+    # the expected one; !cancelled() lets the job run although a dependency was skipped.
+    if: >-
+      !cancelled() && github.event_name == 'push' &&
+      ((needs.check.outputs.prerelease == 'true' && needs.publish-testpypi.result == 'success') ||
+       (needs.check.outputs.prerelease == 'false' && needs.publish-pypi.result == 'success'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          NOTES: ${{ needs.check.outputs.notes }}
+          PRERELEASE: ${{ needs.check.outputs.prerelease }}
+        run: |
+          printf '%s\n' "$NOTES" > notes.md
+          flag=""
+          if [ "$PRERELEASE" = "true" ]; then flag="--prerelease"; fi
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" \
+            --title "Sparklen $TAG" --notes-file notes.md $flag
