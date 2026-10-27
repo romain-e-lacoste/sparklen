@@ -9,9 +9,9 @@ __pycache__/
 # Distribution / packaging
 .python
 doc/_build
-/build/  
-**/build/*  
-!**/build/__init__.py 
+/build/
+**/build/*
+!**/build/__init__.py
 develop-eggs/
 dist/
 Debug/

@@ -31,7 +31,3 @@ void ProxZero::apply(SharedArrayDouble2D &x, const double step_size) {
         }
     }
 }
-
-
-
-

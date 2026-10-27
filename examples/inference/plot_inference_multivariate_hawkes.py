@@ -3,7 +3,7 @@
 Inference of a Multivariate Hawkes Process (MHP)
 ===============================================================================
 
-The following provides a comprehensive guide to using 
+The following provides a comprehensive guide to using
 :class:`~sparklen.hawkes.inference.LearnerHawkesExp` to estimate a MHP.
 """
 
@@ -41,7 +41,7 @@ T = 5.0
 n = 1000
 
 hawkes = SimuHawkesExp(
-    mu=mu, alpha=alpha, beta=beta, 
+    mu=mu, alpha=alpha, beta=beta,
     end_time=T, n_samples=n,
     random_state=4)
 
@@ -51,10 +51,10 @@ data = hawkes.timestamps
 # Perform estimation ----------------------------------------------------------
 
 learner = LearnerHawkesExp(
-    decay=beta, loss="least-squares", penalty="none", 
-    optimizer="agd", lr_scheduler="fast-backtracking", 
-    max_iter=200, tol=1e-5, 
-    verbose_bar=True, verbose=True, 
+    decay=beta, loss="least-squares", penalty="none",
+    optimizer="agd", lr_scheduler="fast-backtracking",
+    max_iter=200, tol=1e-5,
+    verbose_bar=True, verbose=True,
     print_every=10, record_every=10)
 
 learner.fit(X=data, end_time=T)

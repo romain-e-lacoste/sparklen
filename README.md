@@ -10,22 +10,22 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2502.18979-b31b1b?logo=arXiv)](https://arxiv.org/abs/2502.18979)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/sparklen?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/sparklen)
 
-## Overview 
+## Overview
 
-The purpose of `Sparklen` package is to provide the `Python` community with 
-a complete suite of cutting-edge tools specifically tailored for 
-the study of exponential Hawkes processes, with a particular focus 
+The purpose of `Sparklen` package is to provide the `Python` community with
+a complete suite of cutting-edge tools specifically tailored for
+the study of exponential Hawkes processes, with a particular focus
 on high-dimensional framework. It notably features:
 
   * A efficient cluster-based simulation method for generating events.
 
-  * A highly versatile and flexible framework for performing inference of 
+  * A highly versatile and flexible framework for performing inference of
     multivariate Hawkes process.
 
-  * Novel approaches to address the challenge of multiclass 
+  * Novel approaches to address the challenge of multiclass
     classification within the supervised learning framework.
 
-## Installation 
+## Installation
 
 You can install `Sparklen` using **pip**, or from **source**.
 
@@ -37,16 +37,16 @@ The easiest way to install `Sparklen` is using `pip`:
 pip install sparklen
 ```
 
-### Install from Source 
+### Install from Source
 
-This section describes how to install the necessary dependencies to 
+This section describes how to install the necessary dependencies to
 set up the package.
 
 #### 1. Install `SWIG`
 
-`Sparklen` uses a `C++` core code for computationally intensive 
-components, ensuring both efficiency and performance. The binding between `C++` 
-and `Python` is handled through `SWIG` wrapper code. Consequently, `SWIG` is 
+`Sparklen` uses a `C++` core code for computationally intensive
+components, ensuring both efficiency and performance. The binding between `C++`
+and `Python` is handled through `SWIG` wrapper code. Consequently, `SWIG` is
 required to build the package.
 
 So first, you need to install `SWIG`. Below are the instructions for various platforms.
@@ -76,7 +76,7 @@ On macOS, you can install `SWIG` using `Homebrew`:
 brew install swig
 ```
 
-##### Windows 
+##### Windows
 
 For Windows, follow these steps:
 
@@ -100,7 +100,7 @@ cd sparklen
 
 #### 3. Build and Install the Package
 
-It's recommended to set up a dedicated Python environment (e.g., using `venv` or `conda`). 
+It's recommended to set up a dedicated Python environment (e.g., using `venv` or `conda`).
 Once your environment is ready, install the package by running:
 
 ```bash
@@ -113,13 +113,13 @@ If you found this package useful, please consider citing it in your work:
 
 ```bibtex
 @article{lacoste2025sparklen,
-      title={Sparklen: A Statistical Learning Toolkit for High-Dimensional Hawkes Processes in Python}, 
+      title={Sparklen: A Statistical Learning Toolkit for High-Dimensional Hawkes Processes in Python},
       author={Lacoste, Romain E.},
       year={2025},
       eprint={2502.18979},
       archivePrefix={arXiv},
       primaryClass={stat.ME},
-      url={https://arxiv.org/abs/2502.18979}, 
+      url={https://arxiv.org/abs/2502.18979},
 }
 ```
 

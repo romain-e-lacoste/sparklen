@@ -22,7 +22,7 @@ def setup_latex_plotting():
     plt.rcParams['ytick.labelsize'] = 12
     plt.rcParams['legend.fontsize'] = 12
     plt.rcParams['axes.titlesize'] = 18
-    
+
 def get_color(name):
     """Return a color by name from the named_colors dictionary."""
     return named_colors.get(name, '#000000')  # Default to black if name is not found

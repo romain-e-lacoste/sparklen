@@ -18,12 +18,12 @@
         PyErr_SetString(PyExc_ValueError, "The Expected Numpy Array should be 1-dimensional");
         SWIG_fail;
     }
-	// Collects Numpy Array features 
+	// Collects Numpy Array features
     npy_intp size = PyArray_SIZE((PyArrayObject*)$input);
     double *data = static_cast<double*>(PyArray_DATA((PyArrayObject*)$input));
-	
+
 	// Instantiation from the Numpy Array features and mark that Python owns the data
-	res = SharedArrayDouble1D(size, data);  
+	res = SharedArrayDouble1D(size, data);
 	res.setPythonOwner(true);
 	$1 = &res;
 }
@@ -90,7 +90,7 @@
     }
     Py_DECREF(seq);
     $1 = &res;
-} 
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////

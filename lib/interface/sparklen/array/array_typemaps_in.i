@@ -15,7 +15,7 @@
         PyErr_SetString(PyExc_TypeError, "The data type of the NumPy Array should be double");
         SWIG_fail;
     }
-	// Collects Numpy Array features 
+	// Collects Numpy Array features
     npy_intp size = PyArray_SIZE((PyArrayObject*)$input);
     double *data = static_cast<double*>(PyArray_DATA((PyArrayObject*)$input));
 
@@ -49,7 +49,7 @@
     npy_intp rows = dims[0];
     npy_intp cols = dims[1];
     double *data = static_cast<double*>(PyArray_DATA($input));
-	
+
 	// Instantiation from the 2D Numpy Array without taking ownership of the data
     res = ArrayDouble2D(rows, cols, data);
     $1 = &res;

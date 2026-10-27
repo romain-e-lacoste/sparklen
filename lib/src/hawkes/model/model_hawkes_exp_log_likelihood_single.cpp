@@ -140,6 +140,3 @@ SharedArrayDouble2D ModelHawkesExpLogLikelihoodSingle::compute_grad(const ListSh
 	}
 	return grad;
 }
-
-
-

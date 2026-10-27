@@ -5,7 +5,7 @@ from .ermlr_classifier import ERMLRCLassifier
 from .sample_generator import make_classification
 
 __all__ = [
-    'ERMCLassifier', 
+    'ERMCLassifier',
     'ERMLRCLassifier',
     'make_classification'
 ]

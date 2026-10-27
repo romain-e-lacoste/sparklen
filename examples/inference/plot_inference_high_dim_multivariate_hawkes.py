@@ -3,10 +3,10 @@
 Inference of a sparse high-dimensional Multivariate Hawkes Process (MHP)
 ===============================================================================
 
-We shift our focus to a high-dimensional MHP where the interaction matrix 
-exhibits a sparse structure. This example provides a detailed walkthrough for 
+We shift our focus to a high-dimensional MHP where the interaction matrix
+exhibits a sparse structure. This example provides a detailed walkthrough for
 using:class:`~sparklen.hawkes.inference.LearnerHawkesExp`, showcasing
-the specialized options designed for such cases. 
+the specialized options designed for such cases.
 """
 
 # Author: Romain E. Lacoste
@@ -50,7 +50,7 @@ T = 5.0
 n = 250
 
 hawkes = SimuHawkesExp(
-    mu=mu, alpha=alpha, beta=beta, 
+    mu=mu, alpha=alpha, beta=beta,
     end_time=T, n_samples=n,
     random_state=8)
 
@@ -60,12 +60,12 @@ data = hawkes.timestamps
 # Perform estimation ----------------------------------------------------------
 
 learner_lasso_cv = LearnerHawkesExp(
-    decay=beta, loss="least-squares", 
+    decay=beta, loss="least-squares",
     penalty="lasso", kappa_choice="cv",
-    optimizer="agd", lr_scheduler="fast-backtracking", 
-    max_iter=200, tol=1e-5, 
+    optimizer="agd", lr_scheduler="fast-backtracking",
+    max_iter=200, tol=1e-5,
     penalty_mu=False, cv=10,
-    verbose_bar=True, verbose=True, 
+    verbose_bar=True, verbose=True,
     print_every=10, record_every=10)
 
 learner_lasso_cv.fit(X=data, end_time=T)
@@ -73,12 +73,12 @@ theta_hat_lasso_cv = learner_lasso_cv.estimated_params
 
 
 learner_lasso_ebic = LearnerHawkesExp(
-    decay=beta, loss="least-squares", 
+    decay=beta, loss="least-squares",
     penalty="lasso", kappa_choice="ebic",
-    optimizer="agd", lr_scheduler="fast-backtracking", 
-    max_iter=200, tol=1e-5, 
+    optimizer="agd", lr_scheduler="fast-backtracking",
+    max_iter=200, tol=1e-5,
     penalty_mu=False, gamma=1.0,
-    verbose_bar=True, verbose=True, 
+    verbose_bar=True, verbose=True,
     print_every=10, record_every=10)
 
 learner_lasso_ebic.fit(X=data, end_time=T)

@@ -16,6 +16,4 @@
 %include "sparklen/hawkes/model/model_hawkes_exp_least_squares_single.h"
 %include "sparklen/hawkes/model/model_hawkes_exp_least_squares.h"
 %include "sparklen/hawkes/model/model_hawkes_exp_log_likelihood_single.h"
-%include "sparklen/hawkes/model/model_hawkes_exp_log_likelihood.h"         
-
-  
+%include "sparklen/hawkes/model/model_hawkes_exp_log_likelihood.h"

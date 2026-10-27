@@ -21,7 +21,7 @@
 import_array();
 %}
 
-// Include the typemaps interface files 
+// Include the typemaps interface files
 %include array_typemaps_in.i
 %include array_typemaps_out.i
 %include sharedarray_typemaps_in.i

@@ -61,5 +61,3 @@ SharedArrayDouble2D ModelHawkesExpLeastSquares::compute_averaged_hessian(const L
 
 	return averaged_hessian;
 }
-
-

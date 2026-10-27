@@ -2,34 +2,34 @@
 # License: BSD-3-Clause
 
 from abc import ABC, abstractmethod
-
 from warnings import warn
 
 import numpy as np
 
+
 class ModelHawkes(ABC):
     """
     Abstract class intended as a base class for Hawkes models.
-    
-    This class defines a core structure for Hawkes models classes 
-    through inheritance. Thus, it is intended for development purposes, 
-    not for end-users. 
+
+    This class defines a core structure for Hawkes models classes
+    through inheritance. Thus, it is intended for development purposes,
+    not for end-users.
     """
-    
+
     def __init__(self, decay=None):
-        
+
         # Initialize attribute with default value to call the setter
         self._data = None
         self._end_time = None
         self._decay = None
-        
+
         self._is_data_setted = False
         self._is_decay_setted = False
-        
+
         if decay is not None:
             self.decay = decay
             self._is_decay_setted = True
-        
+
     def check_set_state(self):
         if not self._is_data_setted:
             if self._data is None:
@@ -38,7 +38,7 @@ class ModelHawkes(ABC):
                 raise AttributeError("The observation end-time must have been set to the ModelHawkes object to run this computation. You must call set_data() before calling loss().")
         if not self._is_decay_setted:
             raise AttributeError("The kernel decay parameter must have been set to the ModelHawkes object to run this computation")
-    
+
     def set_data(self, data, end_time=None):
         # Check data form
         if not len(data) >= 1:
@@ -64,25 +64,25 @@ class ModelHawkes(ABC):
                 warn("The observation end-time has already been set. This will overwrite the existing one.", UserWarning)
             self._end_time = end_time
         self._is_data_setted = True
-        
+
     def n_repetitions(self):
         return self._n_repetitions
-    
+
     def n_components(self):
         return self._n_components
-    
+
     @property
     def data(self):
         return self._data
-    
+
     @property
     def end_time(self):
         return self._end_time
-    
+
     @property
     def decay(self):
         return self._decay
-        
+
     @decay.setter
     def decay(self, decay):
         if decay < 0:
@@ -96,22 +96,22 @@ class ModelHawkes(ABC):
     def loss(self, theta):
         """
         Abstract method, must be implemented in subclasses that inherit it.
-        
+
         Compute the value of the loss evaluated at a given point.
-        
+
         Parameters
         ----------
         theta : ndarray of shape (d, d+1)
-            Parameter of the model. The first column corresponds to 
-            the exogenous intensity parameter. The d next columns 
-            correspond to the interaction matrix. 
-        
-        Returns : 
+            Parameter of the model. The first column corresponds to
+            the exogenous intensity parameter. The d next columns
+            correspond to the interaction matrix.
+
+        Returns :
         -------
         float
             The value of the loss evaluated at the input parameter.
         """
-        
+
         # Partially implemented logic in the abstract method
         self.check_set_state()
         if not isinstance(theta, np.ndarray):
@@ -126,22 +126,22 @@ class ModelHawkes(ABC):
     def grad(self, theta):
         """
         Abstract method, must be implemented in subclasses that inherit it.
-        
+
         Compute the gradient of the loss evaluated at a given point.
-        
+
         Parameters
         ----------
         theta : ndarray of shape (d, d+1)
-            Parameter of the model. The first column corresponds to 
-            the exogenous intensity parameter. The d next columns 
-            correspond to the interaction matrix. 
-        
-        Returns : 
+            Parameter of the model. The first column corresponds to
+            the exogenous intensity parameter. The d next columns
+            correspond to the interaction matrix.
+
+        Returns :
         -------
         ndarray
             The gradient of the loss evaluated at the input parameter.
         """
-        
+
         # Partially implemented logic in the abstract method
         self.check_set_state()
         if not isinstance(theta, np.ndarray):
@@ -151,56 +151,54 @@ class ModelHawkes(ABC):
 
         # This part must be implemented in the subclasses method
         pass
-        
+
     @abstractmethod
     def hessian(self):
         """
         Abstract method, must be implemented in subclasses that inherit it.
-        
+
         Compute the hessian of the loss.
-        
-        Returns : 
+
+        Returns :
         -------
         ndarray
             The hessian matrix of the loss evaluated at the input parameter.
-        
+
         Raises:
         -------
             NotImplementedError: If the method is not implemented by a subclass.
         """
-        
+
         # Partially implemented logic in the abstract method
         self.check_set_state()
-        
+
         # This part must be implemented in the subclasses method
         pass
-        
+
     @abstractmethod
     def lipschitz_const(self):
         """
         Abstract method, must be implemented in subclasses that inherit it.
-        
-        Compute the Lipschitz constant of the gradient. 
-        
-        Returns : 
+
+        Compute the Lipschitz constant of the gradient.
+
+        Returns :
         -------
         float
-            The value of the Lipschitz constant. 
-        
+            The value of the Lipschitz constant.
+
         Raises:
         -------
             NotImplementedError: If the method is not implemented by a subclass.
         """
-        
+
         # This part must be implemented in the subclasses method
         pass
-    
+
     @abstractmethod
     def print_info(self):
         pass
-    
+
     def __repr__(self):
         class_name = self.__class__.__name__
         return (f"{class_name}(decay={self._decay})")
-    
-    
