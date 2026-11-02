@@ -14,11 +14,13 @@ import sparklen
 
 
 def test_version_is_set():
+    """Check that the installed package reports a non-empty version."""
     assert isinstance(sparklen.__version__, str)
     assert sparklen.__version__ != ""
 
 
 def test_public_api_imports():
+    """Check that every public class and function can be imported."""
     from sparklen.calibration import CalibrationCV, CalibrationEBIC
     from sparklen.hawkes.classification import (
         ERMCLassifier,
@@ -54,6 +56,7 @@ def small_sample():
 
 
 def test_simulation_shape(small_sample):
+    """Check that a small simulation returns sorted float64 times in [0, T)."""
     assert len(small_sample) == 20
     for path in small_sample:
         assert len(path) == 2
@@ -64,6 +67,7 @@ def test_simulation_shape(small_sample):
 
 
 def test_least_squares_loss_and_grad_are_finite(small_sample):
+    """Check that the least-squares loss and gradient are finite on a simulation."""
     from sparklen.hawkes.model import ModelHawkesExpLeastSquares
 
     model = ModelHawkesExpLeastSquares(decay=2.0)
@@ -76,6 +80,7 @@ def test_least_squares_loss_and_grad_are_finite(small_sample):
 
 
 def test_learner_fit_runs(small_sample):
+    """Check that a small LearnerHawkesExp fit runs and gives finite estimates."""
     from sparklen.hawkes.inference import LearnerHawkesExp
 
     learner = LearnerHawkesExp(decay=2.0, loss="least-squares", penalty="none",
