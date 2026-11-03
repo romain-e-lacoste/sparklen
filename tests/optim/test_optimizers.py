@@ -136,3 +136,15 @@ def test_check_finite_rejects_nan_and_infinities(loss):
     """Check that a NaN or infinite loss raises FloatingPointError."""
     with pytest.raises(FloatingPointError, match="iteration 3"):
         Optimizer._check_finite(loss, iteration=3)
+
+
+def test_lipschitz_step_is_recomputed_for_a_new_model():
+    """Check that the Lipschitz step size 1/L is recomputed for a new model."""
+    optimizer = make_optimizer(GD, Quadratic(scale=1.0), lr_scheduler="lipschitz",
+                               max_iter=5)
+    optimizer.optimize(np.zeros((2, 3)))
+    assert optimizer.history["lr"][-1] == pytest.approx(1.0)
+
+    optimizer.set_model(Quadratic(scale=4.0))
+    optimizer.optimize(np.zeros((2, 3)))
+    assert optimizer.history["lr"][-1] == pytest.approx(0.25)

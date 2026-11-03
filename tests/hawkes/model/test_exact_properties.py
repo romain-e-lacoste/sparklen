@@ -58,3 +58,12 @@ def test_log_likelihood_changing_the_time_unit(paths, theta):
     n_events = sum(len(events) for path in paths for events in path)
     expected = model.loss(theta, neg=False) - n_events * np.log(c)
     assert scaled.loss(scaled_theta, neg=False) == pytest.approx(expected, rel=1e-12)
+
+
+def test_lipschitz_constant_is_a_real_float(paths):
+    """Check that the Lipschitz constant is a real float equal to the largest
+    eigenvalue of the least-squares Hessian."""
+    model = make_model(ModelHawkesExpLeastSquares, paths)
+    lipschitz = model.lipschitz_const()
+    assert isinstance(lipschitz, float)
+    assert lipschitz == pytest.approx(np.max(np.linalg.eigvalsh(model.hessian())))

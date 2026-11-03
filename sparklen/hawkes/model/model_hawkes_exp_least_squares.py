@@ -2,7 +2,6 @@
 # License: BSD-3-Clause
 
 import numpy as np
-from numpy.linalg import eig
 from tabulate import tabulate
 
 from sparklen.hawkes.model.base.model_hawkes import ModelHawkes
@@ -178,7 +177,9 @@ class ModelHawkesExpLeastSquares(ModelHawkes):
             The value of the Lipschitz constant.
         """
         hessian = self.hessian()
-        return np.max(eig(hessian)[0])
+        # The Hessian is symmetric: eigvalsh returns real eigenvalues in
+        # ascending order
+        return float(np.linalg.eigvalsh(hessian)[-1])
 
     def print_info(self):
         """ Display information about the instantiated model object. """

@@ -29,6 +29,19 @@ class TwoWayBacktrackingLineSearchLR(LearningRateScheduler):
 
         self._step_size = 1.0
 
+    def set_model(self, model):
+        """
+        Set the model and restart the search from a unit step size.
+
+        Parameters
+        ----------
+        model : object
+            The model whose loss is used in the line search.
+        """
+        super().set_model(model)
+        # Do not carry the last step size over to another model or problem.
+        self._step_size = 1.0
+
     def step(self, search_point, loss_search_point, grad_search_point):
         """
         Determine the step size at a given iteration of the descent
