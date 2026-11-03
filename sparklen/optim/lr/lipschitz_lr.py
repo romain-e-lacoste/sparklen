@@ -19,6 +19,21 @@ class LipschitzLR(LearningRateScheduler):
         #     raise NotImplementedError("The objective functional for this model do not have a Lipschitz continuous gradient")
         self._is_computed = False
 
+    def set_model(self, model):
+        """
+        Set the model and forget the step size computed for a previous one.
+
+        Parameters
+        ----------
+        model : object
+            The model whose gradient Lipschitz constant gives the step size.
+        """
+        super().set_model(model)
+        # The Lipschitz constant depends on the model and its data, so it is
+        # recomputed at the first step after every call to set_model.
+        self._is_computed = False
+        self._step_size = None
+
     def step(self, search_point, loss_search_point, grad_search_point):
         """
         Determine the step size at a given iteration of the descent
