@@ -130,6 +130,7 @@ class SimuHawkesExp():
             path = self._simulate_single_path()
             self._timestamps.append(path)
 
+        return self
 
     def _simulate_single_path(self):
 
