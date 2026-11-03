@@ -152,10 +152,15 @@ class ERMCLassifier():
         self : object
             The instance of the fitted model.
         """
+        # No result until this fit succeeds, even after an earlier fit
+        self._is_fitted, self._estimated_params = False, None
         start_time = time.time()  # Start the timer
 
         # Initialize values
         model_train, S, Gamma, k, gamma, x0, x, loss_x, grad_x = self._initialize_values(X, y, end_time)
+
+        converged = False
+        iteration = 0
 
         pbar = None
         if self._verbose_bar:
@@ -180,8 +185,13 @@ class ERMCLassifier():
                 loss_x_new = model_train.loss(x_new)
                 grad_x_new = model_train.grad(x_new)
 
-                # Update relative distance
-                rel_loss = abs(loss_x_new - loss_x) / abs(loss_x)
+                if not np.isfinite(loss_x_new):
+                    raise FloatingPointError(
+                        f"The training loss is not finite at iteration {iteration + 1} (got {loss_x_new}).")
+
+                # Update relative distance (zero loss: converged only if unchanged)
+                change = abs(loss_x_new - loss_x)
+                rel_loss = 0.0 if change == 0 else (change / abs(loss_x) if loss_x != 0 else np.inf)
 
                 # Update progress bar and print detailed information based on print_every
                 if self._verbose_bar and iteration % self._print_every == 0:
@@ -189,35 +199,31 @@ class ERMCLassifier():
                     if self._verbose:
                         pbar.set_postfix({"Loss": loss_x_new, "gamma": gamma})
 
-                # Check for convergence
-                converged = rel_loss < self._tol
-                if converged:
+                # Accept the new iterate, then check for convergence
+                x, loss_x, grad_x = x_new, loss_x_new, grad_x_new
+                if rel_loss < self._tol:
+                    converged = True
                     break
 
-                # Update x, loss_x, and grad_x for the next iteration
-                x, loss_x, grad_x = x_new, loss_x_new, grad_x_new
-
-        except Exception as e:
-            if pbar:
-                pbar.write(f"\nTraining interrupted: {e}")
-
         finally:
-            end_time = time.time()  # End the timer
-            self._elapsed_time = end_time - start_time
-
+            # Errors are not caught: they reach the caller after the timer
+            # is stopped and the progress bar is closed.
+            self._elapsed_time = time.time() - start_time
             if pbar:
-                # Print the status message
-                if converged:
-                    pbar.write(f"\nTraining completed. Convergence achieved after {iteration + 1} iterations.")
-                else:
-                    pbar.write(f"\nTraining terminated. Max iterations {self._max_iter} reached.")
-                pbar.write(f"\nTime elapsed: {self._elapsed_time:.2f} seconds.")
-
                 pbar.close()
 
-        self._estimated_params = x
+        if pbar:
+            # Print the status message
+            if converged:
+                pbar.write(f"\nTraining completed. Convergence achieved after {iteration + 1} iterations.")
+            else:
+                pbar.write(f"\nTraining terminated. Max iterations {self._max_iter} reached.")
+            pbar.write(f"\nTime elapsed: {self._elapsed_time:.2f} seconds.")
 
+        self._estimated_params = x
         self._is_fitted = True
+
+        return self
 
     def predict(self, X, end_time=None):
         """

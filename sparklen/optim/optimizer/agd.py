@@ -92,7 +92,7 @@ class AGD(Optimizer):
         step_size, x_new, loss_x_new, grad_x_new = self._lr_scheduler.step(y, loss_y, grad_y)
 
         # Update relative distance
-        rel_loss = abs(loss_x_new - loss_x) / abs(loss_x)
+        rel_loss = self._relative_change(loss_x_new, loss_x)
 
         # Update momentum
         t_new = np.sqrt((1. + (1. + 4. * t * t))) / 2.
@@ -128,6 +128,10 @@ class AGD(Optimizer):
 
         # Initialize the loss and gradient for the first iteration
         x, loss_x, y, loss_y, grad_y, t = self._initialize_values(x0)
+        self._check_finite(loss_x, iteration=0)
+
+        converged = False
+        iteration = 0
 
         pbar = None
         if self._verbose_bar:
@@ -137,6 +141,7 @@ class AGD(Optimizer):
         try:
             for iteration in range(self._max_iter):
                 step_size, x_new, loss_x_new, grad_x_new, y_new, loss_y_new, grad_y_new, t_new, rel_loss = self._step(x, loss_x, y, loss_y, grad_y, t)
+                self._check_finite(loss_x_new, iteration + 1)
 
                 # Update progress bar and print detailed information based on print_every
                 if self._verbose_bar and iteration % self._print_every == 0:
@@ -148,39 +153,35 @@ class AGD(Optimizer):
                 if iteration % self._record_every == 0:
                     self.record_history(x_new, loss_x_new, grad_x_new, step_size, rel_loss, iteration)
 
-                # Check for convergence
-                converged = rel_loss < self._tol
-                if converged:
+                # Accept the new iterate, then check for convergence
+                x, loss_x, y, loss_y, grad_y, t = x_new, loss_x_new, y_new, loss_y_new, grad_y_new, t_new
+                if rel_loss < self._tol:
+                    converged = True
                     break
 
-                # Update x, loss_x, and grad_x for the next iteration
-                x, loss_x, y, loss_y, grad_y, t = x_new, loss_x_new, y_new, loss_y_new, grad_y_new, t_new
-
-        except Exception as e:
-            if pbar:
-                pbar.write(f"\nOptimization interrupted: {e}")
-
         finally:
-            end_time = time.time()  # End the timer
-            self._elapsed_time = end_time - start_time
-
+            # Errors are not caught: they reach the caller after the timer
+            # is stopped and the progress bar is closed.
+            self._elapsed_time = time.time() - start_time
             if pbar:
-                # Print the status message
-                if converged:
-                    pbar.write(f"\nOptimization completed. Convergence achieved after {iteration + 1} iterations.")
-                else:
-                    pbar.write(f"\nOptimization terminated. Max iterations {self._max_iter} reached.")
-                pbar.write(f"\nTime elapsed: {self._elapsed_time:.2f} seconds.")
-
                 pbar.close()
 
+        if pbar:
+            # Print the status message
+            if converged:
+                pbar.write(f"\nOptimization completed. Convergence achieved after {iteration + 1} iterations.")
+            else:
+                pbar.write(f"\nOptimization terminated. Max iterations {self._max_iter} reached.")
+            pbar.write(f"\nTime elapsed: {self._elapsed_time:.2f} seconds.")
+
+        self._minimizer = x
         self._is_optimized = True
 
         # Print full history based on verbose
         if self._verbose:
             self.print_history()
 
-        self._minimizer = x
+        return self
 
     def print_info(self):
         """ Display information about the instantiated model object. """

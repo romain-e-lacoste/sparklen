@@ -2,6 +2,7 @@
 # License: BSD-3-Clause
 
 import time
+from warnings import warn
 
 import numpy as np
 from sklearn.model_selection import KFold
@@ -154,6 +155,8 @@ class CalibrationCV(Calibration):
         self : object
             The instance of the calibrated object.
         """
+        # No result until this search succeeds, even after an earlier calibration
+        self._best_kappa, self._best_score = None, None
         self._model = self._losses[self._str_loss](decay)
         self._model.set_data(data, end_time)
 
@@ -182,6 +185,8 @@ class CalibrationCV(Calibration):
 
         self._best_kappa, self._best_score = best_kappa, best_score
 
+        return self
+
     def _search_grid(self, decay, data, end_time, grid, title="Searching"):
         """
         Internal method to perform a grid search and return the best parameter and its BIC score.
@@ -191,6 +196,7 @@ class CalibrationCV(Calibration):
 
         best_score = float('inf')
         best_kappa = None
+        skipped = []
 
         pbar = None
         if self._verbose_bar:
@@ -207,23 +213,30 @@ class CalibrationCV(Calibration):
                     if self._verbose:
                         pbar.set_postfix({"kappa": kappa, "score": score})
 
-                if score < best_score:
+                if not np.isfinite(score):
+                    skipped.append(round(float(kappa), 2))
+                elif score < best_score:
                     best_score = score
-                    best_kappa = round(kappa, 2)
-
-        except Exception as e:
-            if pbar:
-                pbar.write(f"\nCV search interrupted: {e}")
+                    best_kappa = round(float(kappa), 2)
 
         finally:
-            end_time = time.time()  # End the timer
-            elapsed_time = end_time - start_time
-
+            # Errors are not caught: they reach the caller after the
+            # progress bar is closed.
             if pbar:
-                pbar.write(f"\nBest kappa found: {best_kappa} with score: {best_score}")
-                pbar.write(f"\nTime elapsed: {elapsed_time:.2f} seconds.")
-
                 pbar.close()
+
+        if best_kappa is None:
+            raise RuntimeError(
+                "The cross-validation score is not finite for any penalization "
+                f"constant of the grid {np.round(grid, 2).tolist()}. Check the data and the decay.")
+        if skipped:
+            warn(f"The cross-validation score is not finite for kappa in {skipped}; "
+                 "these values were skipped.", RuntimeWarning)
+
+        if pbar:
+            elapsed_time = time.time() - start_time
+            pbar.write(f"\nBest kappa found: {best_kappa} with score: {best_score}")
+            pbar.write(f"\nTime elapsed: {elapsed_time:.2f} seconds.")
 
         return best_kappa, best_score
 

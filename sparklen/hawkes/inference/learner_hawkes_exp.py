@@ -273,6 +273,8 @@ class LearnerHawkesExp(BaseEstimator):
         self : object
             The instance of the fitted model.
         """
+        # No result until this fit succeeds, even after an earlier fit
+        self._is_fitted, self._estimated_params, self._best_kappa = False, None, None
         if self._decay is None:
             raise AttributeError("The kernel decay parameter must have been given to call fit()")
         self._model.decay = self._decay
@@ -300,6 +302,8 @@ class LearnerHawkesExp(BaseEstimator):
         self._estimated_params = self._optimizer.minimizer
 
         self._is_fitted = True
+
+        return self
 
     @property
     def estimated_params(self):

@@ -3,6 +3,7 @@
 
 from abc import ABC, abstractmethod
 
+import numpy as np
 from tabulate import tabulate
 
 from sparklen.optim.lr import (
@@ -146,6 +147,23 @@ class Optimizer(ABC):
         self._history["lr"].append(step_size)
         self._history["rel_loss"].append(rel_loss)
         self._history["iter"].append(iteration)
+
+    @staticmethod
+    def _relative_change(loss_new, loss_old):
+        """Relative change of the loss, safe when the previous loss is zero."""
+        change = abs(loss_new - loss_old)
+        if change == 0:
+            return 0.0
+        return change / abs(loss_old) if loss_old != 0 else np.inf
+
+    @staticmethod
+    def _check_finite(loss, iteration):
+        """Stop with an explicit error as soon as the loss is NaN or infinite."""
+        if not np.isfinite(loss):
+            raise FloatingPointError(
+                f"The loss is not finite at iteration {iteration} (got {loss}). "
+                "The optimization cannot continue: check the data, the decay and the "
+                "starting point.")
 
     @abstractmethod
     def print_info(self):
