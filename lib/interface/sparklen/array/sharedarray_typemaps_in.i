@@ -18,6 +18,11 @@
         PyErr_SetString(PyExc_ValueError, "The Expected Numpy Array should be 1-dimensional");
         SWIG_fail;
     }
+    // The C++ side reads the buffer as packed doubles: reject strided views
+    if (!PyArray_ISCARRAY_RO((PyArrayObject*)$input)) {
+        PyErr_SetString(PyExc_ValueError, "The NumPy Array should be C-contiguous and aligned (use numpy.ascontiguousarray)");
+        SWIG_fail;
+    }
 	// Collects Numpy Array features
     npy_intp size = PyArray_SIZE((PyArrayObject*)$input);
     double *data = static_cast<double*>(PyArray_DATA((PyArrayObject*)$input));
@@ -44,6 +49,12 @@
     }
 	if (PyArray_NDIM((PyArrayObject*)$input) != 2) {
         PyErr_SetString(PyExc_ValueError, "The Expected Numpy Array should be 2-dimensional");
+        SWIG_fail;
+    }
+    // The C++ side reads the buffer as row-major packed doubles: reject
+    // Fortran-ordered arrays and strided views
+    if (!PyArray_ISCARRAY_RO((PyArrayObject*)$input)) {
+        PyErr_SetString(PyExc_ValueError, "The NumPy Array should be C-contiguous and aligned (use numpy.ascontiguousarray)");
         SWIG_fail;
     }
     // Collect NumPy Array features
@@ -81,6 +92,10 @@
         if (PyArray_NDIM(array) != 1 || PyArray_TYPE(array) != NPY_DOUBLE) {
             Py_DECREF(seq);
             SWIG_exception_fail(SWIG_TypeError, "Expected a 1D numpy array of type double");
+        }
+        if (!PyArray_ISCARRAY_RO(array)) {
+            Py_DECREF(seq);
+            SWIG_exception_fail(SWIG_ValueError, "The NumPy Array should be C-contiguous and aligned (use numpy.ascontiguousarray)");
         }
         npy_intp size = PyArray_SIZE(array);
         double *data = static_cast<double *>(PyArray_DATA(array));
@@ -128,6 +143,11 @@
                 Py_DECREF(seq_inner);
                 Py_DECREF(seq_outer);
                 SWIG_exception_fail(SWIG_TypeError, "Expected a 1D numpy array of type double");
+            }
+            if (!PyArray_ISCARRAY_RO(array)) {
+                Py_DECREF(seq_inner);
+                Py_DECREF(seq_outer);
+                SWIG_exception_fail(SWIG_ValueError, "The NumPy Array should be C-contiguous and aligned (use numpy.ascontiguousarray)");
             }
             npy_intp size = PyArray_SIZE(array);
             double *data = static_cast<double *>(PyArray_DATA(array));

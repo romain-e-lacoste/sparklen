@@ -71,6 +71,10 @@ class Prox(ABC):
 
         if not isinstance(x, np.ndarray):
             raise TypeError(f"Input theta parameter should be a NumPy Array, but got {type(x).__name__} instead.")
+        # The C++ core updates x in place through its raw buffer
+        if x.dtype != np.float64 or not x.flags.c_contiguous or not x.flags.writeable:
+            raise ValueError("Input x should be a writeable, C-contiguous float64 NumPy Array, "
+                             "since the proximal operator is applied in place. Use np.ascontiguousarray(x, dtype=np.float64).")
 
         if not step_size >= 0:
             raise ValueError("The step size input should be positive.")

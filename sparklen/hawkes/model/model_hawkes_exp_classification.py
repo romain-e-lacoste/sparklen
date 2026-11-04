@@ -116,7 +116,7 @@ class ModelHawkesExpClassification(ModelHawkesClassification):
             The value of the classification loss.
         """
         # Call the base class logic
-        super().loss(bold_theta)
+        bold_theta = super().loss(bold_theta)
         result = 0
         for rep in range(self._n_repetitions):
             pi_n = self._get_pi(self._X[rep], self._end_time, bold_theta, self._decay, self._weights)
@@ -144,7 +144,7 @@ class ModelHawkesExpClassification(ModelHawkesClassification):
             The gradient of the classification loss.
         """
         # Call the base class logic
-        super().grad(bold_theta)
+        bold_theta = super().grad(bold_theta)
         grad = np.zeros((self._n_repetitions, self._n_classes, self._n_components, self._n_components+1), dtype=np.float64)
         for rep in range(self._n_repetitions):
             pi = self._get_pi(self._X[rep], self._end_time, bold_theta, self._decay, self._weights)

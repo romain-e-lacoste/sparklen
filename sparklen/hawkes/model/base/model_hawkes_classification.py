@@ -6,6 +6,8 @@ from warnings import warn
 
 import numpy as np
 
+from sparklen.hawkes.model.base.model_hawkes import _validate_paths
+
 
 class ModelHawkesClassification(ABC):
     """
@@ -45,40 +47,27 @@ class ModelHawkesClassification(ABC):
             raise AttributeError("The kernel decay paremeter must have been set to run this computation")
 
     def set_data(self, X, y, end_time=None):
-        # Check training data form
-        if not len(X) >= 1:
-            raise ValueError("The training data should have at least one repetition")
-        self._n_repetitions = len(X)
-
-        if not len(X[0]) >= 1:
-            raise ValueError("The dimension of the network should be at least one")
-        self._n_components = len(X[0])
-
-        for index, sublist in enumerate(X):
-            if len(sublist) != self._n_components:
-                raise ValueError(f"The inner length of the {index}-th repetition of the training data should match the number of components {self._n_components}, "
-                          f"but got {len(sublist)} instead.")
-        if self._X is not None:
-            warn("The training data has already been set. This will overwrite the existing one.", UserWarning)
-        self._X = X
+        # Check the training data form, convert the event times and set the end time
+        paths, checked_end_time = _validate_paths(X, end_time, name="X")
+        self._n_repetitions = len(paths)
+        self._n_components = len(paths[0])
 
         # Check training labels form
-        if not len(y) == self._n_repetitions:
-            raise ValueError("The training labels should have the same length as the training data")
-        self._n_classes = np.max(y)+1
+        y = np.asarray(y)
+        if y.ndim != 1 or len(y) != self._n_repetitions:
+            raise ValueError("The training labels should be a one-dimensional array with the same length as the training data")
+        if not np.issubdtype(y.dtype, np.integer) or np.any(y < 0):
+            raise ValueError("The training labels should be non-negative integers")
+
+        if self._X is not None:
+            warn("The training data has already been set. This will overwrite the existing one.", UserWarning)
+        self._X = paths
+        self._n_classes = int(np.max(y)) + 1
         self._y = y
-
-       # Check end_time form
-        if end_time is None:
-            self._end_time = max([max((np.max(events, initial=0.0) for events in inner), default=0.0) for inner in X])
-        else:
-            if end_time < 0:
-                raise ValueError("The upper bound of observation should be positive")
-            if self._end_time is not None:
-                warn("The observation end-time has already been set. This will overwrite the existing one.", UserWarning)
-            self._end_time = end_time
-
-        self._is_setted = True
+        if end_time is not None and self._end_time is not None:
+            warn("The observation end-time has already been set. This will overwrite the existing one.", UserWarning)
+        self._end_time = checked_end_time
+        self._is_data_setted = True
 
     def n_classes(self):
         return self._n_classes
@@ -151,8 +140,8 @@ class ModelHawkesClassification(ABC):
         if bold_theta.shape != (self._n_classes, self._n_components, self._n_components+1):
             raise ValueError(f"Input theta parameter should be of shape {(self._n_classes, self._n_components, self._n_components+1)}, but got {bold_theta.shape} instead.")
 
-        # This part must be implemented in the subclasses method
-        pass
+        # The C++ core reads theta as a packed row-major float64 buffer
+        return np.ascontiguousarray(bold_theta, dtype=np.float64)
 
     @abstractmethod
     def grad(self, bold_theta):
@@ -182,8 +171,8 @@ class ModelHawkesClassification(ABC):
         if bold_theta.shape != (self._n_classes, self._n_components, self._n_components+1):
             raise ValueError(f"Input theta parameter should be of shape {(self._n_classes, self._n_components, self._n_components+1)}, but got {bold_theta.shape} instead.")
 
-        # This part must be implemented in the subclasses method
-        pass
+        # The C++ core reads theta as a packed row-major float64 buffer
+        return np.ascontiguousarray(bold_theta, dtype=np.float64)
 
     @abstractmethod
     def hessian(self):

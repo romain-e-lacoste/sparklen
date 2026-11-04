@@ -129,7 +129,7 @@ class ModelHawkesExpLeastSquares(ModelHawkes):
             The value of the least-squares loss.
         """
         # Call the base class logic
-        super().loss(theta)
+        theta = super().loss(theta)
         return self._cpp_model.compute_averaged_loss(self._data, self._end_time, self._decay, theta)
 
     def grad(self, theta):
@@ -150,7 +150,7 @@ class ModelHawkesExpLeastSquares(ModelHawkes):
             The gradient of the least-squares loss.
         """
         # Call the base class logic
-        super().grad(theta)
+        theta = super().grad(theta)
         return self._cpp_model.compute_averaged_grad(self._data, self._end_time, self._decay, theta)
 
     def hessian(self):

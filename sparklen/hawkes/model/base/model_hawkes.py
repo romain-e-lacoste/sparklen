@@ -7,6 +7,62 @@ from warnings import warn
 import numpy as np
 
 
+def _validate_paths(data, end_time=None, name="data"):
+    """
+    Check repeated paths of a Hawkes process and return a safe copy.
+
+    Every array of event times is converted to a C-contiguous float64 array
+    (the layout read by the C++ core) and must be one-dimensional, finite,
+    non-negative and sorted. With `end_time=None`, the end time is the
+    largest event time; otherwise it must be positive and no event may
+    exceed it.
+
+    Returns
+    -------
+    paths : list of list of ndarray
+        The converted paths.
+
+    end_time : float
+        The end time of the observation period.
+    """
+    if not len(data) >= 1:
+        raise ValueError(f"The {name} should have at least one repetition")
+    n_components = len(data[0])
+    if not n_components >= 1:
+        raise ValueError("The dimension of the network should be at least one")
+    paths = []
+    for i, path in enumerate(data):
+        if len(path) != n_components:
+            raise ValueError(f"The inner length of the {i}-th repetition of {name} should match the number of components {n_components}, "
+                             f"but got {len(path)} instead.")
+        converted = []
+        for j, events in enumerate(path):
+            events = np.ascontiguousarray(events, dtype=np.float64)
+            if events.ndim != 1:
+                raise ValueError(f"{name}[{i}][{j}] should be a one-dimensional array of event times, but has shape {events.shape}.")
+            if not np.all(np.isfinite(events)):
+                raise ValueError(f"{name}[{i}][{j}] contains NaN or infinite event times.")
+            if np.any(np.diff(events) < 0):
+                raise ValueError(f"The event times in {name}[{i}][{j}] should be sorted in increasing order.")
+            if events.size and events[0] < 0:
+                raise ValueError(f"{name}[{i}][{j}] contains negative event times.")
+            converted.append(events)
+        paths.append(converted)
+
+    last_event = max((events[-1] for path in paths for events in path if events.size), default=0.0)
+    if end_time is None:
+        if not last_event > 0:
+            raise ValueError(f"The observation end-time cannot be inferred from {name} without positive event times. Pass end_time explicitly.")
+        end_time = last_event
+    else:
+        if not (np.isfinite(end_time) and end_time > 0):
+            raise ValueError("The upper bound of observation should be positive")
+        if last_event > end_time:
+            raise ValueError(f"The largest event time ({last_event}) exceeds the upper bound of observation end_time={end_time}. "
+                             "Remove the events after end_time or increase end_time.")
+    return paths, float(end_time)
+
+
 class ModelHawkes(ABC):
     """
     Abstract class intended as a base class for Hawkes models.
@@ -40,29 +96,16 @@ class ModelHawkes(ABC):
             raise AttributeError("The kernel decay parameter must have been set to the ModelHawkes object to run this computation")
 
     def set_data(self, data, end_time=None):
-        # Check data form
-        if not len(data) >= 1:
-            raise ValueError("The data should have at least one repetition")
-        self._n_repetitions = len(data)
-        if not len(data[0]) >= 1:
-            raise ValueError("The dimension of the network should be at least one")
-        self._n_components = len(data[0])
-        for index, sublist in enumerate(data):
-            if len(sublist) != self._n_components:
-                raise ValueError(f"The inner length of the {index}-th repetition of data should match the number of components {self._n_components}, "
-                          f"but got {len(sublist)} instead.")
+        # Check the data form, convert the event times and set the end time
+        paths, checked_end_time = _validate_paths(data, end_time)
+        self._n_repetitions = len(paths)
+        self._n_components = len(paths[0])
         if self._data is not None:
             warn("The data has already been set. This will overwrite the existing one.", UserWarning)
-        self._data = data
-        # check end_time form
-        if end_time is None:
-            self._end_time = max([max((np.max(events, initial=0.0) for events in inner), default=0.0) for inner in data])
-        else:
-            if end_time < 0:
-                raise ValueError("The upper bound of observation should be positive")
-            if self._end_time is not None:
-                warn("The observation end-time has already been set. This will overwrite the existing one.", UserWarning)
-            self._end_time = end_time
+        self._data = paths
+        if end_time is not None and self._end_time is not None:
+            warn("The observation end-time has already been set. This will overwrite the existing one.", UserWarning)
+        self._end_time = checked_end_time
         self._is_data_setted = True
 
     def n_repetitions(self):
@@ -119,8 +162,8 @@ class ModelHawkes(ABC):
         if theta.shape != (self._n_components, self._n_components+1):
             raise ValueError(f"Input theta parameter should be of shape {(self._n_components, self._n_components+1)}, but got {theta.shape} instead.")
 
-        # This part must be implemented in the subclasses method
-        pass
+        # The C++ core reads theta as a packed row-major float64 buffer
+        return np.ascontiguousarray(theta, dtype=np.float64)
 
     @abstractmethod
     def grad(self, theta):
@@ -149,8 +192,8 @@ class ModelHawkes(ABC):
         if theta.shape != (self._n_components, self._n_components+1):
             raise ValueError(f"Input theta parameter should be of shape {(self._n_components, self._n_components+1)}, but got {theta.shape} instead.")
 
-        # This part must be implemented in the subclasses method
-        pass
+        # The C++ core reads theta as a packed row-major float64 buffer
+        return np.ascontiguousarray(theta, dtype=np.float64)
 
     @abstractmethod
     def hessian(self):

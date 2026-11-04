@@ -134,7 +134,7 @@ class ModelHawkesExpLogLikelihood(ModelHawkes):
             The value of the log-likelihood loss.
         """
         # Call the base class logic
-        super().loss(theta)
+        theta = super().loss(theta)
         return self._cpp_model.compute_averaged_loss(self._data, self._end_time, self._decay, theta, neg)
 
     def grad(self, theta, neg=True):
@@ -160,7 +160,7 @@ class ModelHawkesExpLogLikelihood(ModelHawkes):
             The gradient of the log-likelihood loss.
         """
         # Call the base class logic
-        super().grad(theta)
+        theta = super().grad(theta)
         return self._cpp_model.compute_averaged_grad(self._data, self._end_time, self._decay, theta, neg)
 
     def hessian(self):
