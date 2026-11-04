@@ -140,9 +140,10 @@ SharedArrayDouble2D ModelHawkesExpLeastSquaresSingle::compute_hessian(const List
 
 	hessian(0,0) = 2.*end_time;
 
+	// Row and column 0 hold the mu derivatives; alpha_j sits at index j+1.
 	for (size_t j=0; j<n_components; ++j){
-		hessian(0,j) = 2*I[j];
-		hessian(j,0) = 2*I[j];
+		hessian(0,j+1) = 2*I[j];
+		hessian(j+1,0) = 2*I[j];
 	}
 
 	for (size_t j=0; j<n_components; ++j){
