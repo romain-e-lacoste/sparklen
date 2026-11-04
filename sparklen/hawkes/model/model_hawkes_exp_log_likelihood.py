@@ -109,7 +109,12 @@ class ModelHawkesExpLogLikelihood(ModelHawkes):
         """
         # Call the base class logic
         super().set_data(data, end_time)
-        self._cpp_model = CppModelHawkesExpLogLikelihood(self._n_repetitions, self._n_components)
+
+    def _invalidate_cache(self):
+        # The C++ model caches weights computed from the data, the end time
+        # and the decay at its first use, so it is rebuilt when any changes.
+        if self._is_data_setted:
+            self._cpp_model = CppModelHawkesExpLogLikelihood(self._n_repetitions, self._n_components)
 
     def loss(self, theta, neg=True):
         """

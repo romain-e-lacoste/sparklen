@@ -107,6 +107,7 @@ class ModelHawkes(ABC):
             warn("The observation end-time has already been set. This will overwrite the existing one.", UserWarning)
         self._end_time = checked_end_time
         self._is_data_setted = True
+        self._invalidate_cache()
 
     def n_repetitions(self):
         return self._n_repetitions
@@ -134,6 +135,15 @@ class ModelHawkes(ABC):
             warn("The decay parameter of the kernel has already been set. This will overwrite the existing one.", UserWarning)
         self._decay = decay
         self._is_decay_setted = True
+        self._invalidate_cache()
+
+    def _invalidate_cache(self):
+        """
+        Invalidate the quantities precomputed from the data, the end time and
+        the decay, so that they are recomputed at their next use. Called by
+        set_data and the decay setter; subclasses that cache them override it.
+        """
+        pass
 
     @abstractmethod
     def loss(self, theta):
