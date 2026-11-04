@@ -69,6 +69,14 @@ def test_log_likelihood_two_events():
     assert model.loss(THETA) == pytest.approx(-expected, rel=1e-14)
 
 
+def test_least_squares_hessian_one_event():
+    """Check the least-squares Hessian of a one-event path against its value by hand."""
+    model = make_model(ModelHawkesExpLeastSquares, [[np.array([T1])]])
+    E1 = np.exp(-BETA * (T - T1))
+    expected = 2 / T * np.array([[T, 1 - E1], [1 - E1, BETA / 2 * (1 - E1**2)]])
+    np.testing.assert_allclose(model.hessian(), expected, rtol=1e-14)
+
+
 @pytest.mark.parametrize("cls", MODELS)
 def test_poisson_estimate_is_the_event_rate(cls):
     """Check that, with alpha = 0, the gradient in mu vanishes at the rate N / T."""
