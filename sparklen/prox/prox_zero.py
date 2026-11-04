@@ -80,7 +80,8 @@ class ProxZero(Prox):
 
         self._cpp_prox = CppProxZero(self._pen_const, self._start, self._end, self._positive)
 
-        return self._cpp_prox.apply(x, step_size)
+        self._cpp_prox.apply(x, step_size)
+        return x
 
     def print_info(self):
         """ Display information about the instantiated model object. """
