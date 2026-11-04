@@ -48,3 +48,10 @@ def test_failed_fit_leaves_no_estimate(data, monkeypatch):
         learner.estimated_params
     with pytest.raises(ValueError, match="call fit"):
         learner.score(data, END_TIME)
+
+
+def test_unknown_kappa_choice_lists_the_valid_ones():
+    """Check that an unknown kappa_choice raises a ValueError
+    that lists the valid choices."""
+    with pytest.raises(ValueError, match="'ebic'"):
+        LearnerHawkesExp(decay=DECAY, kappa_choice="aic")

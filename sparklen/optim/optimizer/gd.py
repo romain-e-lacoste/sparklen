@@ -170,10 +170,11 @@ class GD(Optimizer):
 
     def print_info(self):
         """ Display information about the instantiated model object. """
+        prox = self._prox if self._is_prox_setted else None
         table = [["Optimizer", "Gradient Descent"],
-                 ["Learning rate strategy", self._lr],
-                 ["Regularization", self._prox],
-                 ["Penalization constant", self._kappa],
+                 ["Learning rate strategy", type(self._lr_scheduler).__name__],
+                 ["Regularization", prox],
+                 ["Penalization constant", prox.pen_const if prox is not None else None],
                  ["Maximum iteration", self._max_iter],
                  ["Tolerance", self._tol],
                  ["Verbose", self._verbose]]

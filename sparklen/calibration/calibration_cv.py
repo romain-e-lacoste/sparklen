@@ -157,6 +157,10 @@ class CalibrationCV(Calibration):
         """
         # No result until this search succeeds, even after an earlier calibration
         self._best_kappa, self._best_score = None, None
+        if len(data) < self._cv:
+            raise ValueError(f"Cross-validation with cv={self._cv} folds needs at least {self._cv} repetitions, "
+                             f"but the data has {len(data)}.")
+
         self._model = self._losses[self._str_loss](decay)
         self._model.set_data(data, end_time)
 

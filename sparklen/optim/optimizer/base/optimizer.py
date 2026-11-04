@@ -61,7 +61,7 @@ class Optimizer(ABC):
         self._is_model_setted = True
 
     def set_prox(self, prox):
-        prox.check_set_state
+        prox.check_set_state()
         self._prox = prox
         self._is_prox_setted = True
 
