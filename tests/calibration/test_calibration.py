@@ -113,3 +113,18 @@ def test_failed_calibration_leaves_no_result(cls, method, data, monkeypatch):
         calibration.calibrate(DECAY, data, END_TIME, grid_max=0.3)
     assert calibration.best_kappa is None
     assert calibration.best_score is None
+
+
+def test_star_import_exposes_both_calibrations():
+    """Check that `from sparklen.calibration import *` exposes both classes."""
+    namespace = {}
+    exec("from sparklen.calibration import *", namespace)
+    assert "CalibrationEBIC" in namespace
+    assert "CalibrationCV" in namespace
+
+
+def test_cross_validation_needs_enough_repetitions(data):
+    """Check that more folds than repetitions raise a ValueError."""
+    calibration = CalibrationCV(cv=20, verbose_bar=False, verbose=False)
+    with pytest.raises(ValueError, match="at least 20 repetitions"):
+        calibration.calibrate(DECAY, data, END_TIME)

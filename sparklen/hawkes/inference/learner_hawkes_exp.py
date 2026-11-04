@@ -209,7 +209,7 @@ class LearnerHawkesExp(BaseEstimator):
         self._str_penalty = penalty
 
         if kappa_choice not in self._kappa_choices:
-            raise ValueError(f"The choosen criteria to tune the penalization constant, '{kappa_choice}', is not available. Choose instead from {list(self._penalties.keys())}.")
+            raise ValueError(f"The choosen criteria to tune the penalization constant, '{kappa_choice}', is not available. Choose instead from {list(self._kappa_choices.keys())}.")
         self._str_kappa_choice = kappa_choice
         if self._str_penalty != "none":
             if kappa_choice == "cv":

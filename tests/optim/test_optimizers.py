@@ -148,3 +148,20 @@ def test_lipschitz_step_is_recomputed_for_a_new_model():
     optimizer.set_model(Quadratic(scale=4.0))
     optimizer.optimize(np.zeros((2, 3)))
     assert optimizer.history["lr"][-1] == pytest.approx(0.25)
+
+
+@pytest.mark.parametrize("cls", [GD, AGD])
+def test_print_info_runs(cls, capsys):
+    """Check that print_info runs and names the step-size rule."""
+    optimizer = make_optimizer(cls, Quadratic())
+    optimizer.print_info()
+    assert "BacktrackingLineSearchLR" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("cls", [GD, AGD])
+def test_set_prox_checks_the_prox_state(cls):
+    """Check that set_prox rejects an operator without a penalization constant."""
+    optimizer = cls("backtracking", max_iter=10, tol=1e-5,
+                    verbose_bar=False, verbose=False)
+    with pytest.raises(AttributeError, match="penalization constant"):
+        optimizer.set_prox(ProxZero())
