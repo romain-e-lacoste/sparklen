@@ -8,9 +8,7 @@ from tqdm import tqdm
 
 from sparklen.hawkes.inference import LearnerHawkesExp
 from sparklen.hawkes.model import ModelHawkesExpClassification
-from sparklen.hawkes.model.build.hawkes_model import (
-    ModelHawkesExpLogLikelihoodSingle as CppModelHawkesExpLogLikelihoodSingle,
-)
+from sparklen.hawkes.model.base.model_hawkes import _validate_paths
 from sparklen.plot import plot_confusion_matrix
 
 
@@ -115,6 +113,8 @@ class ERMLRCLassifier():
             theta_lasso = learner.estimated_params
 
             zero_coords[k] = np.argwhere(theta_lasso==0)
+            # Only interactions are fixed to zero: mu stays at least 1/n
+            zero_coords[k] = zero_coords[k][zero_coords[k][:, 1] > 0]
 
             theta_bold_lasso[k] = theta_lasso
 
@@ -143,7 +143,10 @@ class ERMLRCLassifier():
         Gamma = 0.0
         k = 1
         gamma = self._gamma0
-        x = theta_bold_lasso
+        # Start from the Lasso estimate projected onto the parameter set
+        if len(X) < 2:
+            raise ValueError("The training data should have at least two repetitions")
+        x = ERMLRCLassifier._proj_operator(theta_bold_lasso.copy(), len(X))
 
         loss_x = model_train.loss(x)
         grad_x = model_train.grad(x)
@@ -151,20 +154,21 @@ class ERMLRCLassifier():
         return model_train, S, Gamma, k, gamma, x, loss_x, grad_x
 
     @staticmethod
-    def _proj_operator(bold_theta):
-        K, M = bold_theta.shape[:2]
-
-        for k in range(K):
-            for i in range(0, M):
-                for j in range(0, M):
-                    bold_theta[k][i][j+1] = np.minimum(1., np.maximum(bold_theta[k][i][j+1], 0.))
-
+    def _proj_operator(bold_theta, n):
+        """
+        Project onto the parameter set: each exogenous intensity at least 1/n,
+        where n is the number of training paths (the lower bound of the ERMLR
+        paper), and each interaction in [0, 1]. The lower bound keeps every
+        intensity positive, so the log-likelihoods stay finite.
+        """
+        bold_theta[:, :, 0] = np.clip(bold_theta[:, :, 0], 1.0 / n, None)
+        bold_theta[:, :, 1:] = np.clip(bold_theta[:, :, 1:], 0.0, 1.0)
         return bold_theta
 
     @staticmethod
-    def _step(x, eta, grad, zero_coords):
+    def _step(x, eta, grad, zero_coords, n):
         K = x.shape[0]
-        x_new = ERMLRCLassifier._proj_operator(x - eta * grad)
+        x_new = ERMLRCLassifier._proj_operator(x - eta * grad, n)
         for k in range(K):
             for coord in zero_coords[k]:
                 x_new[k, coord[0], coord[1]] = 0.
@@ -208,6 +212,7 @@ class ERMLRCLassifier():
 
         # Initialize values
         model_train, S, Gamma, k, gamma, x, loss_x, grad_x = self._initialize_values(theta_bold_lasso, X, y, end_time)
+        x_start = x
 
         converged = False
         iteration = 0
@@ -224,9 +229,9 @@ class ERMLRCLassifier():
                 S += norm_grad_x ** 2
                 h = np.sqrt((S + 1.0) * (1.0 + np.log(1.0 + S)))
                 while True :
-                    x_new = ERMLRCLassifier._step(x, gamma/h, grad_x, zero_coords)
+                    x_new = ERMLRCLassifier._step(x, gamma/h, grad_x, zero_coords, len(X))
                     B = (2.0 / np.sqrt(k)) * gamma + np.sqrt(Gamma + (gamma * norm_grad_x / h) ** 2)
-                    if np.linalg.norm(x_new - theta_bold_lasso) > B:
+                    if np.linalg.norm(x_new - x_start) > B:
                         k += 1
                         gamma *= 2
                     else :
@@ -340,22 +345,12 @@ class ERMLRCLassifier():
         if not self._is_fitted:
                 raise ValueError("Training has not been completed. You must call fit() before getting the predict class probabilities.")
 
-        if end_time is None:
-            end_time = max([max((np.max(events, initial=0.0) for events in inner), default=0.0) for inner in X])
+        X, end_time = _validate_paths(X, end_time, name="X")
 
-        n = len(X)
-        K, M = self._estimated_params.shape[:2]
-
-        probabilities = np.empty((n,K), dtype=np.float64)
-
-        for rep in range(n):
-            for k in range(K):
-                model = CppModelHawkesExpLogLikelihoodSingle(M)
-                F_k = model.compute_loss(X[rep], end_time, self._decay, self._estimated_params[k], False)
-                if (F_k >= np.log(np.finfo(np.float64).max)):
-                    F_k = np.log(np.finfo(np.float64).max)
-                probabilities[rep][k] = self._weights[k] * np.exp(F_k)
-            probabilities[rep, :] /= np.sum(probabilities[rep, :])
+        probabilities = np.empty((len(X), len(self._estimated_params)), dtype=np.float64)
+        for rep, path in enumerate(X):
+            probabilities[rep] = ModelHawkesExpClassification._get_pi(
+                path, end_time, self._estimated_params, self._decay, self._weights)
         return probabilities
 
     def score(self, X, y, end_time=None):

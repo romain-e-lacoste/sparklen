@@ -2,6 +2,7 @@
 # License: BSD-3-Clause
 
 import numpy as np
+from scipy.special import logsumexp
 from tabulate import tabulate
 
 from sparklen.hawkes.model.base.model_hawkes_classification import (
@@ -84,19 +85,45 @@ class ModelHawkesExpClassification(ModelHawkesClassification):
         super().set_data(X, y, end_time)
 
     @staticmethod
-    def _get_pi(jump_times, end_time, bold_theta, decay, p):
+    def _class_log_likelihoods(jump_times, end_time, bold_theta, decay, with_grad=False):
+        """
+        Log-likelihood F_k of one path under each class parameter, and
+        optionally its gradient with respect to each class parameter.
+        """
         K = len(bold_theta)
         M = len(bold_theta[0])
-        pi = np.empty(K, dtype=np.float64)
+        F = np.empty(K, dtype=np.float64)
+        grad_F = np.empty(bold_theta.shape, dtype=np.float64) if with_grad else None
         for k in range(K):
+            # One C++ model per class: its cached weights are reused by the
+            # gradient call below.
             model = CppModelHawkesExpLogLikelihoodSingle(M)
-            F_k = model.compute_loss(jump_times, end_time, decay, bold_theta[k], False)
-            if (F_k >= 709):
-                print(F_k)
-                F_k = 709
-            pi[k] = p[k]*np.exp(F_k)
-        pi /= np.sum(pi)
-        return pi
+            F[k] = model.compute_loss(jump_times, end_time, decay, bold_theta[k], False)
+            if with_grad:
+                grad_F[k] = model.compute_grad(jump_times, end_time, decay, bold_theta[k], False)
+        return F, grad_F
+
+    @staticmethod
+    def _posterior(F, p):
+        """
+        Posterior class probabilities from the log-likelihoods F and the class
+        weights p, computed in log space (logsumexp) so that large
+        log-likelihoods neither overflow nor underflow.
+        """
+        with np.errstate(divide="ignore"):
+            log_weighted = np.log(p) + F
+        return np.exp(log_weighted - logsumexp(log_weighted))
+
+    @staticmethod
+    def _get_pi(jump_times, end_time, bold_theta, decay, p):
+        """
+        Posterior class probabilities of one path,
+        pi_k = p_k exp(F_k) / sum_m p_m exp(F_m), where F_k is the log-likelihood
+        of the path under the parameter of class k and p the class weights.
+        Used by the loss and by predict_proba.
+        """
+        F, _ = ModelHawkesExpClassification._class_log_likelihoods(jump_times, end_time, bold_theta, decay)
+        return ModelHawkesExpClassification._posterior(F, p)
 
     def loss(self, bold_theta):
         """
@@ -117,13 +144,12 @@ class ModelHawkesExpClassification(ModelHawkesClassification):
         """
         # Call the base class logic
         bold_theta = super().loss(bold_theta)
-        result = 0
+
+        result = 0.0
         for rep in range(self._n_repetitions):
-            pi_n = self._get_pi(self._X[rep], self._end_time, bold_theta, self._decay, self._weights)
-            for k in range(self._n_classes):
-                result += pi_n[k]**2
-                if (k==self._y[rep]):
-                    result += -2*pi_n[k] + 1
+            pi = self._get_pi(self._X[rep], self._end_time, bold_theta, self._decay, self._weights)
+            # Squared distance between pi and the one-hot encoding of the label
+            result += np.sum(pi**2) - 2*pi[self._y[rep]] + 1
         return (4*result)/self._n_repetitions
 
     def grad(self, bold_theta):
@@ -145,16 +171,18 @@ class ModelHawkesExpClassification(ModelHawkesClassification):
         """
         # Call the base class logic
         bold_theta = super().grad(bold_theta)
-        grad = np.zeros((self._n_repetitions, self._n_classes, self._n_components, self._n_components+1), dtype=np.float64)
+
+        grad = np.zeros(bold_theta.shape, dtype=np.float64)
         for rep in range(self._n_repetitions):
-            pi = self._get_pi(self._X[rep], self._end_time, bold_theta, self._decay, self._weights)
-            for k in range(self._n_classes):
-                tmp = pi[k]*(pi[k] - pi[self._y[rep]] - np.sum(pi**2))
-                if (k==self._y[rep]):
-                    tmp -= pi[self._y[rep]]
-                model = CppModelHawkesExpLogLikelihoodSingle(self._n_components)
-                grad[rep][k] = 8*model.compute_grad(self._X[rep], self._end_time, self._decay, bold_theta[k], False)*tmp
-        return np.mean(grad, axis=0)
+            F, grad_F = self._class_log_likelihoods(self._X[rep], self._end_time, bold_theta, self._decay, with_grad=True)
+            pi = self._posterior(F, self._weights)
+            y = self._y[rep]
+            # d/dF_k of 4 * sum_m (pi_m - 1{m=y})^2 is
+            # 8 pi_k (pi_k - 1{k=y} - ||pi||^2 + pi_y)
+            coef = pi * (pi - np.sum(pi**2) + pi[y])
+            coef[y] -= pi[y]
+            grad += 8 * coef[:, None, None] * grad_F
+        return grad / self._n_repetitions
 
     def hessian(self):
         raise NotImplementedError("Method hessian is not implemented for Hawkes model with log-likelihood goodness-of-fit functional")
