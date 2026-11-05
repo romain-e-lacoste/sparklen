@@ -45,6 +45,13 @@ class ModelHawkesClassification(ABC):
                 raise AttributeError("The observation end-time must have been set to run this computation. You must call set_data() before calling loss().")
         if self._decay is None:
             raise AttributeError("The kernel decay paremeter must have been set to run this computation")
+        if self._weights is None:
+            raise AttributeError("The class weights must have been set to run this computation")
+        if len(self._weights) != self._n_classes:
+            raise ValueError(f"The length of weights ({len(self._weights)}) should match the number of classes ({self._n_classes}).")
+        weights = np.asarray(self._weights, dtype=np.float64)
+        if not (np.all(np.isfinite(weights)) and np.all(weights >= 0) and weights.sum() > 0):
+            raise ValueError("The weights should be finite and non-negative, with a positive sum.")
 
     def set_data(self, X, y, end_time=None):
         # Check the training data form, convert the event times and set the end time
