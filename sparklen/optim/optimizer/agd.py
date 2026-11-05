@@ -95,7 +95,7 @@ class AGD(Optimizer):
         rel_loss = self._relative_change(loss_x_new, loss_x)
 
         # Update momentum
-        t_new = np.sqrt((1. + (1. + 4. * t * t))) / 2.
+        t_new = (1. + np.sqrt(1. + 4. * t * t)) / 2.
 
         y_new =  x_new + (t - 1) / t_new * (x_new - x)
 

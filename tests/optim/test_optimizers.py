@@ -165,3 +165,39 @@ def test_set_prox_checks_the_prox_state(cls):
                     verbose_bar=False, verbose=False)
     with pytest.raises(AttributeError, match="penalization constant"):
         optimizer.set_prox(ProxZero())
+
+
+class Anisotropic(Quadratic):
+    """f(x) = sum(curvature * (x - TARGET)^2) / 2, an ill-conditioned quadratic."""
+
+    curvature = np.array([[1.0, 0.1, 0.02], [0.5, 0.05, 0.01]])
+
+    def loss(self, x):
+        return 0.5 * np.sum(self.curvature * (x - TARGET) ** 2)
+
+    def grad(self, x):
+        return self.curvature * (x - TARGET)
+
+    def lipschitz_const(self):
+        return self.curvature.max()
+
+
+def test_agd_follows_the_fista_sequence():
+    """Check that the AGD iterates match the FISTA recursion computed by hand."""
+    optimizer = make_optimizer(AGD, Anisotropic(), lr_scheduler="lipschitz",
+                               max_iter=30, tol=0.0)
+    optimizer.optimize(np.zeros((2, 3)))
+
+    # Reference FISTA iterates with step 1/L and no penalty
+    model = Anisotropic()
+    step = 1.0 / model.lipschitz_const()
+    x = y = np.zeros((2, 3))
+    t = 1.0
+    expected = []
+    for _ in range(30):
+        x_new = y - step * model.grad(y)
+        t_new = (1.0 + np.sqrt(1.0 + 4.0 * t * t)) / 2.0
+        y = x_new + (t - 1.0) / t_new * (x_new - x)
+        x, t = x_new, t_new
+        expected.append(x)
+    np.testing.assert_allclose(optimizer.history["x"], expected, rtol=1e-12, atol=1e-14)
