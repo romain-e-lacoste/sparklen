@@ -4,7 +4,6 @@
 from warnings import warn
 
 import numpy as np
-from numpy.linalg import eig
 from numpy.random import default_rng
 
 
@@ -123,7 +122,19 @@ class SimuHawkesExp():
         -------
         self : object
             The instance of the simulated object.
+
+        Raises
+        ------
+        ValueError
+            If the spectral radius of the interaction matrix is at least one.
+            The process is then not stable and the cluster simulation does
+            not terminate.
         """
+        spectral_radius = self.spectral_radius()
+        if spectral_radius >= 1:
+            raise ValueError(f"The spectral radius of the interaction matrix is {spectral_radius:.4g}, "
+                             "but it should be smaller than one for the Hawkes process to be stable.")
+
         self._timestamps = []
 
         for _ in range(self._n_samples):
@@ -209,8 +220,5 @@ class SimuHawkesExp():
         spectral_radius : float
             The spectral radius of the interaction matrix.
         """
-        return np.max(eig(self._alpha)[0])
-        # spectral_radius = np.max(eig(self._alpha)[0])
-        # if spectral_radius > 1:
-        #     warn("The spectral radius is greater than one.", UserWarning)
-        # return spectral_radius
+        # Spectral radius of the branching matrix: the largest eigenvalue modulus
+        return float(np.max(np.abs(np.linalg.eigvals(self._alpha))))
