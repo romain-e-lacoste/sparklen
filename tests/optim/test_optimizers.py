@@ -95,6 +95,7 @@ def test_errors_are_not_swallowed(cls, verbose_bar, capsys):
 
 
 @pytest.mark.parametrize("cls", [GD, AGD])
+@pytest.mark.filterwarnings("ignore:The line search stopped")
 def test_non_finite_loss_raises(cls):
     """Check that a NaN loss at the first step raises FloatingPointError."""
     optimizer = make_optimizer(cls, Quadratic(fault="nan"))
@@ -201,3 +202,22 @@ def test_agd_follows_the_fista_sequence():
         x, t = x_new, t_new
         expected.append(x)
     np.testing.assert_allclose(optimizer.history["x"], expected, rtol=1e-12, atol=1e-14)
+
+
+class Stubborn(Quadratic):
+    """No step size satisfies the sufficient-decrease condition."""
+
+    def loss(self, x):
+        return 0.0 if not np.any(x) else 1e6
+
+    def grad(self, x):
+        return -np.ones_like(x)  # steps go to positive values, kept by the prox
+
+
+@pytest.mark.parametrize("lr_scheduler", ["backtracking", "fast-backtracking"])
+def test_line_search_failure_is_a_warning(lr_scheduler, capsys):
+    """Check that a failed line search emits a RuntimeWarning instead of printing."""
+    optimizer = make_optimizer(GD, Stubborn(), lr_scheduler=lr_scheduler, max_iter=1)
+    with pytest.warns(RuntimeWarning, match="step size became smaller"):
+        optimizer.optimize(np.zeros((2, 3)))
+    assert capsys.readouterr().out == ""

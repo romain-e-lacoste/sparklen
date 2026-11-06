@@ -77,7 +77,7 @@ def make_classification(bold_mu, bold_alpha, beta, end_time, n_samples, n_classe
     generator = default_rng(random_state)
 
     if weights is not None:
-        if len(weights) is not n_classes:
+        if len(weights) != n_classes:
             raise ValueError("The length of weights should match the number of classes.")
     else:
         weights = np.ones(n_classes)/n_classes
