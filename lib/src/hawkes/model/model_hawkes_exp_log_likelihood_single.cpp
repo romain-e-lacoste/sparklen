@@ -10,7 +10,6 @@ ModelHawkesExpLogLikelihoodSingle::ModelHawkesExpLogLikelihoodSingle(){
 	weights_computed = false;
 	N = ArrayInt1D(n_components);
 	I = ArrayDouble1D(n_components);
-	ListArrayDouble2D Psi;
 }
 
 // Overloaded constructor
@@ -19,7 +18,6 @@ ModelHawkesExpLogLikelihoodSingle::ModelHawkesExpLogLikelihoodSingle(size_t n){
 	weights_computed = false;
 	N = ArrayInt1D(n_components);
 	I = ArrayDouble1D(n_components);
-	ListArrayDouble2D Psi;
 }
 
 size_t ModelHawkesExpLogLikelihoodSingle::get_n_components(){

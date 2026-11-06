@@ -1,6 +1,8 @@
 # Author: Romain E. Lacoste
 # License: BSD-3-Clause
 
+from warnings import warn
+
 import numpy as np
 from numpy.linalg import norm
 from tabulate import tabulate
@@ -79,7 +81,7 @@ class BacktrackingLineSearchLR(LearningRateScheduler):
 
             # Break if step size is too small to avoid infinite loop
             if self._step_size < 1e-10:  # Example threshold
-                print("Warning: Step size became too small.")
+                warn("The line search stopped because the step size became smaller than 1e-10.", RuntimeWarning)
                 break
 
         # Compute the gradient at the tentative point

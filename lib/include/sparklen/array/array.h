@@ -4,6 +4,7 @@
 #ifndef LIB_INCLUDE_SPARKLEN_ARRAY_ARRAY_H_
 #define LIB_INCLUDE_SPARKLEN_ARRAY_ARRAY_H_
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -123,7 +124,7 @@ template <typename T> Array<T> &Array<T>::operator=(const Array<T> &other) {
         _size = other._size;
         _data = new T[_size];
         _ownData = true;
-        copy(other._data, other._data + _size, _data);
+        std::copy(other._data, other._data + _size, _data);
     }
     return *this;
 }

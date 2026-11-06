@@ -170,3 +170,17 @@ def test_predict_proba_on_long_paths_has_no_nan():
     proba = classifier.predict_proba(X, end_time=300.0)
     assert np.all(np.isfinite(proba))
     np.testing.assert_allclose(proba.sum(axis=1), 1.0)
+
+
+def test_make_classification_checks_the_weights():
+    """Check that make_classification accepts NumPy integers
+    and rejects weights of the wrong length."""
+    bold_mu = np.full((2, 1), 0.5)
+    bold_alpha = np.full((2, 1, 1), 0.2)
+    X, y = make_classification(bold_mu, bold_alpha, 1.0, 5.0, n_samples=4,
+                               n_classes=np.int64(2), weights=[0.5, 0.5],
+                               random_state=0)
+    assert len(X) == 4
+    with pytest.raises(ValueError, match="length of weights"):
+        make_classification(bold_mu, bold_alpha, 1.0, 5.0, n_samples=4,
+                            n_classes=2, weights=[1.0])
