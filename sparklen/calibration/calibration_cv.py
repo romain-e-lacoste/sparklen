@@ -125,6 +125,8 @@ class CalibrationCV(Calibration):
 
             Specifically, `data[i][j]` is a one-dimensional `ndarray` containing
             the event times of the `j`-th component in the `i`-th realization.
+            Event times are sorted and, within each realization, distinct across
+            all components: a Hawkes process has no simultaneous events.
 
         end_time : float, default=None
             The end time of the observation period. The time horizon defines

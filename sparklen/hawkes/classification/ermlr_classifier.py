@@ -297,6 +297,8 @@ class ERMLRCLassifier():
             repetitions. Each inner list has length `d`, where each element
             is a one-dimensional `ndarray` containing the event times of a
             specific component.
+            Event times are sorted and, within each realization, distinct across
+            all components: a Hawkes process has no simultaneous events.
 
         end_time : float, default=None
             The end time of the observation period. The time horizon defines
@@ -328,6 +330,8 @@ class ERMLRCLassifier():
             repetitions. Each inner list has length `d`, where each element
             is a one-dimensional `ndarray` containing the event times of a
             specific component.
+            Event times are sorted and, within each realization, distinct across
+            all components: a Hawkes process has no simultaneous events.
 
         end_time : float, default=None
             The end time of the observation period. The time horizon defines
@@ -367,6 +371,8 @@ class ERMLRCLassifier():
             repetitions. Each inner list has length `d`, where each element
             is a one-dimensional `ndarray` containing the event times of a
             specific component.
+            Event times are sorted and, within each realization, distinct across
+            all components: a Hawkes process has no simultaneous events.
 
         y : ndarray of shape (n,)
             The true class labels for each test sample.
@@ -409,6 +415,8 @@ class ERMLRCLassifier():
             repetitions. Each inner list has length `d`, where each element
             is a one-dimensional `ndarray` containing the event times of a
             specific component.
+            Event times are sorted and, within each realization, distinct across
+            all components: a Hawkes process has no simultaneous events.
 
         y : ndarray of shape (n,)
             The true class labels for each test sample.
