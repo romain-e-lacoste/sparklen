@@ -13,7 +13,7 @@ from sparklen.plot import plot_confusion_matrix
 
 
 class ERMLRCLassifier():
-    """
+    r"""
     ERMLR classifier class for Hawkes process with exponential kernel.
 
     This class performs classification for a Hawkes process based on observed labeled data.
@@ -21,17 +21,17 @@ class ERMLRCLassifier():
     The observed data consist of labeled repeated realizations of a Hawkes process.
 
     .. math::
-        \\left\\{\\left(\\left\\{t_{j,\\ell}^{(i)}\\right\\}_{\\ell \\in [N_j(T)]},
-        Y^{(i)}\\right), \ j \\in [d], \ i \\in [n] \\right\}
+        \left\{\left(\left\{t_{j,\ell}^{(i)}\right\}_{\ell \in [N_j(T)]},
+        Y^{(i)}\right), \ j \in [d], \ i \in [n] \right\}
 
     where
 
-    * :math:`K \\geq 2` is the number of classes
-    * :math:`n \\geq 1` is the number of repetitions
-    * :math:`d \\geq 1` is the number of components
+    * :math:`K \geq 2` is the number of classes
+    * :math:`n \geq 1` is the number of repetitions
+    * :math:`d \geq 1` is the number of components
     * :math:`T > 0` is the time horizon
-    * :math:`t_{j,\\ell}^{(i)}` is the :math:`\\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
-    * :math:`Y^{(i)} \\in [K]` is the label of the :math:`i`-th feature
+    * :math:`t_{j,\ell}^{(i)}` is the :math:`\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
+    * :math:`Y^{(i)} \in [K]` is the label of the :math:`i`-th feature
 
     Parameters
     ----------

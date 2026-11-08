@@ -21,7 +21,7 @@ from sparklen.prox import ProxElasticNet, ProxL1, ProxL2, ProxZero
 
 
 class LearnerHawkesExp(BaseEstimator):
-    """
+    r"""
     Learner class for Hawkes process with exponential kernel.
 
     This class performs inference for a Hawkes process based on observed data.
@@ -29,29 +29,29 @@ class LearnerHawkesExp(BaseEstimator):
     The observed data consist of repeated realizations of a Hawkes process.
 
     .. math::
-        \\left\\{\\left\\{t_{j,\\ell}^{(i)}\\right\\}_{\\ell \\in [N_j(T)]},
-        \ j \\in [d], \ i \\in [n] \\right\}
+        \left\{\left\{t_{j,\ell}^{(i)}\right\}_{\ell \in [N_j(T)]},
+        \ j \in [d], \ i \in [n] \right\}
 
     where
 
-    * :math:`n \\geq 1` is the number of repetitions
-    * :math:`d \\geq 1` is the number of components
+    * :math:`n \geq 1` is the number of repetitions
+    * :math:`d \geq 1` is the number of components
     * :math:`T > 0` is the time horizon
-    * :math:`t_{j,\\ell}^{(i)}` is the :math:`\\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
+    * :math:`t_{j,\ell}^{(i)}` is the :math:`\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
 
     Given the observation of data, the strategy consist in minimizing
     the following optimization problem:
 
     .. math::
-        \\hat{\\theta}_n(\\kappa) \\in \\arg\\min_{
-        \\theta \in \\mathbb{R}^{d \\times d+1}}
-        \\left\\{F_{T, n}(\\theta) + \\kappa \\Omega(\\theta) \\right\}
+        \hat{\theta}_n(\kappa) \in \arg\min_{
+        \theta \in \mathbb{R}^{d \times d+1}}
+        \left\{F_{T, n}(\theta) + \kappa \Omega(\theta) \right\}
 
     where
 
     * :math:`F_{T, n}(\cdot)` is a loss function
     * :math:`F_{T, n}(\cdot)` is a regularization function
-    * :math:`\\kappa` is the regularization constant
+    * :math:`\kappa` is the regularization constant
 
     This class implements this strategy and offers various options
     for loss functions, regularization functions, penalty constants,

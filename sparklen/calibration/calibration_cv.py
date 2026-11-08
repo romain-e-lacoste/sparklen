@@ -13,22 +13,22 @@ from sparklen.hawkes.model import ModelHawkesExpLogLikelihood
 
 
 class CalibrationCV(Calibration):
-    """
+    r"""
     Calibration class for Hawkes process with exponential kernel.
 
     This class implements a Cross-Validation-based methodology for tuning
     the regularization constant in the following optimization problem:
 
     .. math::
-        \\hat{\\theta}_n(\\kappa) \\in \\arg\\min_{
-        \\theta \in \\mathbb{R}^{d \\times d+1}}
-        \\left\\{F_{T, n}(\\theta) + \\kappa \\Omega(\\theta) \\right\}
+        \hat{\theta}_n(\kappa) \in \arg\min_{
+        \theta \in \mathbb{R}^{d \times d+1}}
+        \left\{F_{T, n}(\theta) + \kappa \Omega(\theta) \right\}
 
     where
 
-    * :math:`\\kappa` is the regularization constant
+    * :math:`\kappa` is the regularization constant
 
-    The strategy involves exploring a grid :math:`\\Delta` of :math:`\\kappa`
+    The strategy involves exploring a grid :math:`\Delta` of :math:`\kappa`
     values and selecting the one that minimizes the criterion of interest.
     In the case of Cross-Validation, this entails partitioning the dataset
     into folds and aiming to minimize the cross-validated risk

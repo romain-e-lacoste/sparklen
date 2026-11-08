@@ -11,7 +11,7 @@ from sparklen.hawkes.model.build.hawkes_model import (
 
 
 class ModelHawkesExpLeastSquares(ModelHawkes):
-    """
+    r"""
     Model class for Hawkes process with exponential kernel and given decay.
 
     This class handles model-related calculations, including loss evaluation,
@@ -20,37 +20,37 @@ class ModelHawkesExpLeastSquares(ModelHawkes):
     The observed data consist of repeated realizations of a Hawkes process.
 
     .. math::
-        \\left\\{\\left\\{t_{j,\\ell}^{(i)}\\right\\}_{\\ell \\in [N_j(T)]},
-        \ j \\in [d], \ i \\in [n] \\right\}
+        \left\{\left\{t_{j,\ell}^{(i)}\right\}_{\ell \in [N_j(T)]},
+        \ j \in [d], \ i \in [n] \right\}
 
     where
 
-    * :math:`n \\geq 1` is the number of repetitions
-    * :math:`d \\geq 1` is the number of components
+    * :math:`n \geq 1` is the number of repetitions
+    * :math:`d \geq 1` is the number of components
     * :math:`T > 0` is the time horizon
-    * :math:`t_{j,\\ell}^{(i)}` is the :math:`\\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
+    * :math:`t_{j,\ell}^{(i)}` is the :math:`\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
 
     The loss function used as goodness-of-fit is the least-squares contrast
     averaged over the repetitions. For a given parameter
-    :math:`\\theta=(\\mu, \\alpha)` it is given by:
+    :math:`\theta=(\mu, \alpha)` it is given by:
 
     .. math::
-        \\frac{1}{n} \\sum_{i=1}^n \\left(\\frac{1}{T}
-        \\sum_{j=1}^d \\int_0^T \\lambda_{j, \\theta}^{(i)2}(t) \ \\textrm{d} t
-        - \\frac{2}{T} \\sum_{j=1}^d \\sum_{\\ell : t_{j, \\ell}^{(i)} < T}
-        \\lambda_{j, \\theta}^{(i)}\\left(t_{j, \\ell}^{(i)}\\right)\\right)
+        \frac{1}{n} \sum_{i=1}^n \left(\frac{1}{T}
+        \sum_{j=1}^d \int_0^T \lambda_{j, \theta}^{(i)2}(t) \ \textrm{d} t
+        - \frac{2}{T} \sum_{j=1}^d \sum_{\ell : t_{j, \ell}^{(i)} < T}
+        \lambda_{j, \theta}^{(i)}\left(t_{j, \ell}^{(i)}\right)\right)
 
-    where :math:`\\lambda_{j, \\theta}(t)` is the intensity function:
+    where :math:`\lambda_{j, \theta}(t)` is the intensity function:
 
     .. math::
-        \\mu_j + \\sum_{j'=1}^d  \\alpha_{j,j'} \\sum_{\\ell : t_{j',\\ell} < t}
-        \\beta e^{-\\beta(t-t_{j',\\ell})}
+        \mu_j + \sum_{j'=1}^d  \alpha_{j,j'} \sum_{\ell : t_{j',\ell} < t}
+        \beta e^{-\beta(t-t_{j',\ell})}
 
     where
 
-    * :math:`(\\mu_j)_{j \\in [d]}` is the vector of exogenous intensities
-    * :math:`(\\alpha_{j, j'})_{j, j' \\in [d]}` is the matrix of interactions
-    * :math:`\\beta` is the fixed and given decay of the exponential kernel
+    * :math:`(\mu_j)_{j \in [d]}` is the vector of exogenous intensities
+    * :math:`(\alpha_{j, j'})_{j, j' \in [d]}` is the matrix of interactions
+    * :math:`\beta` is the fixed and given decay of the exponential kernel
 
     Parameters
     ----------

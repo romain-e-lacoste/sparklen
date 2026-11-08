@@ -8,7 +8,7 @@ from sparklen.prox.build.prox import ProxL2 as CppProxL2
 
 
 class ProxL2(Prox):
-    """
+    r"""
     Proximal operator class for the L2 squared norm.
 
     This class implements the proximal operator of the :math:`\ell_2` norm, in

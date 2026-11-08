@@ -8,7 +8,7 @@ from numpy.random import default_rng
 
 
 class SimuHawkesExp():
-    """
+    r"""
     Simulation class for Hawkes process with exponential kernel.
 
     This class generates data consisting of repeated realizations of a Hawkes process.
@@ -20,17 +20,17 @@ class SimuHawkesExp():
     :math:`d \geq 1` the dimension of the network.
 
     Each process :math:`N_j` is characterized by its intensity function
-    :math:`\\lambda_j(t)`:
+    :math:`\lambda_j(t)`:
 
     .. math::
-        \\mu_j + \\sum_{j'=1}^d  \\alpha_{j,j'} \\sum_{\\ell : t_{j',\\ell} < t}
-        \\beta e^{-\\beta(t-t_{j',\\ell})}
+        \mu_j + \sum_{j'=1}^d  \alpha_{j,j'} \sum_{\ell : t_{j',\ell} < t}
+        \beta e^{-\beta(t-t_{j',\ell})}
 
     where
 
-    * :math:`(\\mu_j)_{j \\in [d]}` is the vector of exogenous intensities
-    * :math:`(\\alpha_{j, j'})_{j, j' \\in [d]}` is the matrix of interactions
-    * :math:`\\beta` is the fixed and given decay of the exponential kernel
+    * :math:`(\mu_j)_{j \in [d]}` is the vector of exogenous intensities
+    * :math:`(\alpha_{j, j'})_{j, j' \in [d]}` is the matrix of interactions
+    * :math:`\beta` is the fixed and given decay of the exponential kernel
 
     Parameters
     ----------

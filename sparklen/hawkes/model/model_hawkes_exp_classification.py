@@ -14,7 +14,7 @@ from sparklen.hawkes.model.build.hawkes_model import (
 
 
 class ModelHawkesExpClassification(ModelHawkesClassification):
-    """
+    r"""
     Model  :math:`K`-classification class for Hawkes process with
     exponential kernel and given decay.
 
@@ -24,31 +24,31 @@ class ModelHawkesExpClassification(ModelHawkesClassification):
     The observed data consist of labeled repeated realizations of a Hawkes process.
 
     .. math::
-        \\left\\{\\left(\\left\\{t_{j,\\ell}^{(i)}\\right\\}_{\\ell \\in [N_j(T)]},
-        Y^{(i)}\\right), \ j \\in [d], \ i \\in [n] \\right\}
+        \left\{\left(\left\{t_{j,\ell}^{(i)}\right\}_{\ell \in [N_j(T)]},
+        Y^{(i)}\right), \ j \in [d], \ i \in [n] \right\}
 
     where
 
-    * :math:`K \\geq 2` is the number of classes
-    * :math:`n \\geq 1` is the number of repetitions
-    * :math:`d \\geq 1` is the number of components
+    * :math:`K \geq 2` is the number of classes
+    * :math:`n \geq 1` is the number of repetitions
+    * :math:`d \geq 1` is the number of components
     * :math:`T > 0` is the time horizon
-    * :math:`t_{j,\\ell}^{(i)}` is the :math:`\\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
-    * :math:`Y^{(i)} \\in [K]` is the label of the :math:`i`-th feature
+    * :math:`t_{j,\ell}^{(i)}` is the :math:`\ell`-th event time of component :math:`j` in the :math:`i`-th repetition
+    * :math:`Y^{(i)} \in [K]` is the label of the :math:`i`-th feature
 
     The feature consists of time events of a Hawkes process whose dynamics
     of occurrence is governed by its label.
     The intensity function of the `j`-th process depends on :math:`Y` and is given by:
 
     .. math::
-        \\mu_{Y,j} + \\sum_{j'=1}^d \\alpha_{Y,j,j'} \\int_0^t
-        \\beta e^{-\\beta(t-s)} \ \\textrm{d} N_{j'}(s)
+        \mu_{Y,j} + \sum_{j'=1}^d \alpha_{Y,j,j'} \int_0^t
+        \beta e^{-\beta(t-s)} \ \textrm{d} N_{j'}(s)
 
     where
 
-    * :math:`(\\mu_{k,j})_{j \\in [d]}` is the vector of exogenous intensities of class `k`
-    * :math:`(\\alpha_{k, j, j'})_{j, j' \\in [d]}` is the matrix of interactions of class `k`
-    * :math:`\\beta` is the fixed and given decay of the exponential kernel
+    * :math:`(\mu_{k,j})_{j \in [d]}` is the vector of exogenous intensities of class `k`
+    * :math:`(\alpha_{k, j, j'})_{j, j' \in [d]}` is the matrix of interactions of class `k`
+    * :math:`\beta` is the fixed and given decay of the exponential kernel
 
     """
 

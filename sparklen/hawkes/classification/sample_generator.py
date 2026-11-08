@@ -8,7 +8,7 @@ from sparklen.hawkes.simulation.simu_hawkes_exp import SimuHawkesExp
 
 
 def make_classification(bold_mu, bold_alpha, beta, end_time, n_samples, n_classes, weights=None, random_state=None):
-    """
+    r"""
     Generate a random `K`-class classification problem.
 
     This function generates data consisting of labeled repeated realizations of Hawkes processes.
@@ -21,14 +21,14 @@ def make_classification(bold_mu, bold_alpha, beta, end_time, n_samples, n_classe
     depends on :math:`Y` and is given by:
 
     .. math::
-        \\mu_{Y,j} + \\sum_{j'=1}^d \\alpha_{Y,j,j'} \\int_0^t
-        \\beta e^{-\\beta(t-s)} \ \\textrm{d} N_{j'}(s)
+        \mu_{Y,j} + \sum_{j'=1}^d \alpha_{Y,j,j'} \int_0^t
+        \beta e^{-\beta(t-s)} \ \textrm{d} N_{j'}(s)
 
     where
 
-    * :math:`(\\mu_{k,j})_{j \\in [d]}` is the vector of exogenous intensities of class `k`
-    * :math:`(\\alpha_{k, j, j'})_{j, j' \\in [d]}` is the matrix of interactions of class `k`
-    * :math:`\\beta` is the fixed and given decay of the exponential kernel
+    * :math:`(\mu_{k,j})_{j \in [d]}` is the vector of exogenous intensities of class `k`
+    * :math:`(\alpha_{k, j, j'})_{j, j' \in [d]}` is the matrix of interactions of class `k`
+    * :math:`\beta` is the fixed and given decay of the exponential kernel
 
     Parameters
     ----------

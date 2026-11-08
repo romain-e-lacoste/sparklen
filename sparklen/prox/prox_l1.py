@@ -8,7 +8,7 @@ from sparklen.prox.build.prox import ProxL1 as CppProxL1
 
 
 class ProxL1(Prox):
-    """
+    r"""
     Proximal operator class for the L1 norm.
 
     This class implements the proximal operator of the :math:`\ell_1` norm,
