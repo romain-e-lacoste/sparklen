@@ -8,7 +8,7 @@ from sparklen.prox.build.prox import ProxElasticNet as CppProxElasticNet
 
 
 class ProxElasticNet(Prox):
-    """
+    r"""
     Proximal operator class for the L1 and L2 norm combined.
 
     This class implements the proximal operator of the :math:`\ell_1 + \ell_2`
