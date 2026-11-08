@@ -17,6 +17,13 @@ def _validate_paths(data, end_time=None, name="data"):
     largest event time; otherwise it must be positive and no event may
     exceed it.
 
+    Within each repetition, event times must also be distinct across all
+    components. A Hawkes process is a simple point process: two events never
+    occur at the same time, and the losses are derived under that assumption
+    (the least-squares weights pair every two events by their order in time).
+    Ties usually come from rounded timestamps; estimates computed from them
+    are biased, so they are refused with a hint to add jitter.
+
     Returns
     -------
     paths : list of list of ndarray
@@ -60,6 +67,17 @@ def _validate_paths(data, end_time=None, name="data"):
         if last_event > end_time:
             raise ValueError(f"The largest event time ({last_event}) exceeds the upper bound of observation end_time={end_time}. "
                              "Remove the events after end_time or increase end_time.")
+
+    # A Hawkes process has no simultaneous events, within or across components
+    for i, path in enumerate(paths):
+        times = np.sort(np.concatenate(path))
+        ties = np.flatnonzero(np.diff(times) == 0)
+        if ties.size:
+            repeated = "1 event occurs" if ties.size == 1 else f"{ties.size} events occur"
+            raise ValueError(f"The event times in {name}[{i}] should be distinct, but {repeated} at the same time as an earlier one "
+                             f"(the first at t = {times[ties[0]]:g}), within or across components. A Hawkes process has no simultaneous "
+                             "events, and estimates computed from them are biased. If the times were rounded, add uniform jitter within "
+                             "the rounding step, or use finer timestamps.")
     return paths, float(end_time)
 
 

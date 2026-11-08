@@ -122,3 +122,38 @@ def test_the_cpp_core_rejects_non_contiguous_arrays(theta):
     with pytest.raises(ValueError, match="C-contiguous"):
         CppModelHawkesExpLogLikelihoodSingle(2).compute_loss(
             path, END_TIME, 1.0, np.asfortranarray(theta), True)
+
+
+@pytest.mark.parametrize("path", [
+    [np.array([1.0, 1.0, 3.0]), np.array([0.7])],     # within a component
+    [np.array([1.0, 3.0]), np.array([1.0])],          # across components
+    [np.array([0.0, 2.0]), np.array([0.0])],          # at t = 0
+], ids=["within", "across", "at-zero"])
+@pytest.mark.parametrize("cls", MODELS)
+def test_simultaneous_events_are_rejected(cls, path):
+    """Check that simultaneous events, within or across components,
+    raise a ValueError."""
+    model = cls(decay=1.0)
+    with pytest.raises(ValueError, match="should be distinct"):
+        model.set_data([[np.array([0.5]), np.array([1.5])], path], end_time=END_TIME)
+
+
+def test_simultaneous_events_message_counts_them_and_suggests_jitter():
+    """Check that the error message names the path, counts the ties,
+    gives the first time and suggests jitter."""
+    model = ModelHawkesExpLeastSquares(decay=1.0)
+    with pytest.raises(ValueError) as error:
+        model.set_data([[np.array([1.0, 2.0, 3.0]), np.array([1.0, 2.0])]], end_time=END_TIME)
+    message = str(error.value)
+    assert "data[0]" in message
+    assert "2 events occur at the same time" in message
+    assert "t = 1" in message
+    assert "jitter" in message
+
+
+def test_classification_rejects_simultaneous_events():
+    """Check that the classification model also rejects simultaneous events."""
+    model = ModelHawkesExpClassification(decay=1.5, weights=np.array([0.5, 0.5]))
+    X = [[np.array([0.5, 2.0]), np.array([1.0])], [np.array([1.0]), np.array([1.0])]]
+    with pytest.raises(ValueError, match=r"X\[1\] should be distinct"):
+        model.set_data(X, np.array([0, 1]), END_TIME)
